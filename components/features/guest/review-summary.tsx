@@ -22,9 +22,9 @@ export function ReviewSummary({
 
   return (
     <div className="space-y-4">
-      <p className="text-heading-sm font-semibold leading-[1.35] tracking-[-0.36px] text-foreground">
+      <p className="text-heading-sm font-semibold text-foreground">
         ★ {rating.toFixed(1)}{" "}
-        <span className="text-body-sm font-normal leading-[1.3] tracking-[-0.28px] text-muted-foreground">
+        <span className="text-body-sm font-normal text-muted-foreground">
           ({reviewCount} reviews)
         </span>
       </p>
@@ -32,7 +32,7 @@ export function ReviewSummary({
         {categories.map((key) => (
           <div
             key={key}
-            className="flex items-center justify-between gap-4 border-b border-border py-2 text-body-sm leading-[1.3] tracking-[-0.28px]"
+            className="flex items-center justify-between gap-4 border-b border-border py-2 text-body-sm"
           >
             <dt className="text-muted-foreground">{CATEGORY_LABELS[key]}</dt>
             <dd className="tabular-nums text-graphite">{breakdown[key].toFixed(1)}</dd>
