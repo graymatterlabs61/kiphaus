@@ -4,13 +4,15 @@
 
 **Theme:** light
 
-Portal uses a twilight-editorial visual language: a dramatic sunset gradient hero (sky-blue fading through violet to warm coral) gives way to a clean, paper-white editorial canvas below. Display headlines are set in Perfectly Nineties — a confident retro serif that signals craft over typical startup sans. Body and UI copy stay in Inter at restrained sizes, with one vivid iOS-blue accent (#007aff) punctuating an otherwise achromatic system. Surfaces are flat and generously rounded: cards at 22-30px, buttons as full pills at 50px, and the floating nav as a soft white capsule. Elevation is whispered rather than dropped — the system prefers 1px outlines and pale #f7f7f7 glow rings over heavy shadows.
+Portal uses a twilight-editorial visual language: a photo-driven property hero gives way to a clean, paper-white editorial canvas below. Display headlines are set in Perfectly Nineties — a confident retro serif that signals craft over typical startup sans. Body and UI copy stay in Inter at restrained sizes, with one warm coral accent (#e8562b) punctuating an otherwise achromatic system. Surfaces are flat and generously rounded: cards at 22-30px, buttons as full pills at 50px, and the floating nav as a soft white capsule. Elevation is whispered rather than dropped — the system prefers 1px outlines and pale #f7f7f7 glow rings over heavy shadows.
+
+**2026-07-16 revision:** accent repointed from iOS-blue (#007aff) to Kiphaus Coral (#e8562b), and the hero moved from an abstract gradient to real property photography with an overlaid search capsule, per direct design-direction feedback. Deliberately not Airbnb's literal #ff385c — same warm-accent family, distinct hue.
 
 ## Tokens — Colors
 
 | Name          | Value                                                                         | Token                   | Role                                                                                                                                                                                                            |
 | ------------- | ----------------------------------------------------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Signal Blue   | `#007aff`                                                                     | `--color-signal-blue`   | Primary action buttons, active states, brand icon highlights, inline links — the only chromatic accent in an otherwise achromatic system. iOS-native vivid blue that makes functional elements feel switched on |
+| Kiphaus Coral | `#e8562b`                                                                     | `--color-signal-blue`   | Primary action buttons, active states, brand icon highlights, inline links — the only chromatic accent in an otherwise achromatic system. Warm, appetite/trust-forward coral distinct from Airbnb's `#ff385c` |
 | Ink Black     | `#000000`                                                                     | `--color-ink-black`     | Headings, primary borders, button text — maximum-contrast structural color                                                                                                                                      |
 | Graphite      | `#3e3e3e`                                                                     | `--color-graphite`      | Body text, secondary borders — softer than black for sustained reading on white                                                                                                                                 |
 | Smoke         | `#636363`                                                                     | `--color-smoke`         | Muted helper text, metadata labels, subtle borders                                                                                                                                                              |
@@ -162,7 +164,7 @@ Circular icon with blue-to-violet gradient (matches hero gradient mid-tones), co
 
 **Role:** Project status indicators in the product UI
 
-50px border-radius full pill, Inter 500 12px text, padding 4px 10px. Subtle #f7f7f7 background for neutral states, #007aff-tinted background for active/paid states
+50px border-radius full pill, Inter 500 12px text, padding 4px 10px. Subtle #f7f7f7 background for neutral states, #e8562b-tinted background for active/paid states
 
 ### Nav Link Item
 
@@ -187,7 +189,7 @@ Inter 500 14px, #000000, 8px horizontal padding, 4px vertical padding. No underl
 ### Do
 
 - Set all display headings in Perfectly Nineties Regular at 36-48px, line-height 1.0, weight 400 — this serif is the system's signature voice and must not be diluted by using it at smaller sizes
-- Use #007aff exclusively for functional accents: primary CTA fills, active states, brand icon highlights, and inline links. Never use it for decorative backgrounds or large surface fills
+- Use #e8562b exclusively for functional accents: primary CTA fills, active states, brand icon highlights, and inline links. Never use it for decorative backgrounds or large surface fills
 - Make every button a full pill at 50px border-radius with no exception — 12-14px vertical padding, 20-24px horizontal padding
 - Keep body text in Inter at 14-16px, line-height 1.30-1.35, with -0.02em letter-spacing for a refined iOS-native feel
 - Round all card and image corners to 22-30px — the generous radii are what give the system its soft, premium character
@@ -196,13 +198,13 @@ Inter 500 14px, #000000, 8px horizontal padding, 4px vertical padding. No underl
 
 ### Don't
 
-- Don't introduce a second chromatic accent color — the system is monochromatic plus exactly one blue (#007aff)
+- Don't introduce a second chromatic accent color — the system is monochromatic plus exactly one blue (#e8562b)
 - Don't use Perfectly Nineties for body text, captions, buttons, or UI labels — it is display-only at 36px and above
 - Don't apply drop shadows heavier than the 5px #f7f7f7 glow ring or 1px #000000 outline — heavy shadows break the flat editorial feel
 - Don't use sharp corners (0-4px radius) on any interactive element or card — minimum 7px, prefer 16px+ for cards and 50px for buttons
 - Don't set body text below 14px in Inter or above weight 600 — the weight range is the system's restraint mechanism
 - Don't place #000000 text directly on a chromatic or gradient background — text must sit on white or #f7f7f7 surfaces only
-- Don't use #007aff for large fills, hero backgrounds, or decorative shapes — it is a functional accent, not a surface color
+- Don't use #e8562b for large fills, hero backgrounds, or decorative shapes — it is a functional accent, not a surface color
 
 ## Surfaces
 
@@ -220,11 +222,11 @@ Inter 500 14px, #000000, 8px horizontal padding, 4px vertical padding. No underl
 
 ## Imagery
 
-The hero is the only atmospheric visual: a full-bleed gradient sunset landscape (blue sky through violet to coral) with silhouetted tree horizons along the bottom edge. All other imagery is product screenshots presented inside white device-frame mockups with soft glow rings. There is no lifestyle photography, no stock imagery, and no illustrations. The product UI itself (shown in the device mockup) uses white cards with clean typography and small inline data elements. The visual strategy is one dramatic atmospheric moment (the hero) followed by pure UI and editorial typography. The blue brand accent (#007aff) appears in the gradient brand icon and as functional highlights in the product UI — never as decorative imagery.
+**Revised 2026-07-16:** this is a homestay marketplace, not a SaaS product — the original "device-frame mockup, no lifestyle photography" language described a different Portal use case and never fit real listing photos. Current rule: the hero is a full-bleed real property photograph (from `lib/mock-data.ts`'s featured listings) with a subtle dark gradient scrim behind the overlaid search capsule for text contrast — not an abstract gradient landscape. Property photography is the primary imagery throughout the site (hero, PropertyCard, PropertyGallery) — real, specific, verified listings, never generic stock/lifestyle filler unrelated to an actual property. The accent color (#e8562b) stays functional-only: buttons, active states, links — never a decorative fill or overlay tint on photography.
 
 ## Layout
 
-Centered max-width layout at approximately 1200px. The hero is full-bleed with the gradient extending edge-to-edge, and a device mockup overlapping the bottom into a landscape silhouette. Below the hero, content flows on a #f7f7f7 canvas with centered or left-aligned text columns at 640-720px reading width. Section gaps are generous (80-120px) to let the editorial typography breathe. The navigation is a floating pill capsule anchored at the top of the viewport with margin, not a full-width bar. Content sections are single-column and text-dominant — no multi-column grids or card grids in the marketing sections. The product mockup is the only visual element competing with text in the hero composition.
+Centered max-width layout at approximately 1200px. The hero is full-bleed with a real property photo and an overlaid search capsule (segmented location/dates/guests fields ending in a coral pill search button). Below the hero, content flows on a #f7f7f7 canvas with centered or left-aligned text columns at 640-720px reading width for editorial/text sections. Section gaps are generous (80-120px) to let the editorial typography breathe. The navigation is a floating pill capsule anchored at the top of the viewport with margin, not a full-width bar. Editorial/trust-proposition sections stay single-column and text-dominant — no decorative multi-icon feature grids. Listing grids (featured stays, search results) are the one explicit exception: a responsive PropertyCard grid (2-3 columns) is core to a marketplace product and is not the "marketing section" grid the single-column rule targets.
 
 ## Agent Prompt Guide
 
@@ -236,12 +238,12 @@ Centered max-width layout at approximately 1200px. The hero is full-bleed with t
 - background (canvas): #f7f7f7
 - background (card): #ffffff
 - border: #000000 (primary) / #f7f7f7 (soft glow ring)
-- accent: #007aff
-- primary action: #007aff (filled action)
+- accent: #e8562b
+- primary action: #e8562b (filled action)
 
 ## Example Component Prompts
 
-1. Create a Primary Action Button: #007aff background, #ffffff text, 9999px radius, compact pill padding. Use this filled treatment for the main CTA.
+1. Create a Primary Action Button: #e8562b background, #ffffff text, 9999px radius, compact pill padding. Use this filled treatment for the main CTA.
 
 2. **Floating nav capsule**: White #ffffff background, 22px border-radius, 1px subtle border with 5px #f7f7f7 soft glow ring. Left: gradient circle icon (40px, blue-to-violet gradient) + 'Portal' wordmark in Inter 600 18px #000000. Right: 'Product', 'Blog', 'Contact' in Inter 500 14px #000000, separated by 20px gaps. Container padding 8px 16px. Float at top with 20px margin.
 
@@ -257,13 +259,13 @@ What makes this system visually distinctive from the sea of generic SaaS landing
 
 - **Retro serif in a tech product**: Perfectly Nineties Regular at display sizes is anti-convention for SaaS. Most startups use geometric sans for everything. The serif creates a magazine/editorial voice that signals craft and taste over speed and engineering.
 
-- **Single iOS-blue accent**: #007aff is Apple's system blue. Using it as the only chromatic accent in an otherwise achromatic system is a deliberate native-aesthetic choice — it makes the product feel at home on macOS/iOS without copying Apple wholesale.
+- **Single warm-coral accent**: #e8562b is the one chromatic color in an otherwise achromatic system — a deliberate restraint choice. Warm enough to read as inviting (fits a travel/hospitality product) without being Airbnb's literal #ff385c.
 
 - **Glow rings instead of shadows**: The 5px #f7f7f7 halo around cards and mockups is a depth technique borrowed from visionOS/frosted glass. It whispers elevation rather than declaring it with a drop shadow.
 
 - **50px pill buttons**: Full rounding on all interactive elements. The pill is the system's gesture toward softness — combined with the serif headlines, it creates a product that feels handcrafted rather than engineered.
 
-- **Hero as atmosphere, not pitch**: The gradient landscape hero doesn't show a dashboard screenshot or a feature list — it sets a mood. The product earns attention through beauty, not claims. This is unusual in a productivity SaaS category that typically leads with product screenshots.
+- **Hero shows a real stay, not a stock scene**: the hero photograph is an actual featured, verified property — not generic travel stock imagery or an abstract mood shot. It earns attention through a real, bookable place, not a feature list.
 
 ## Similar Brands
 
@@ -279,7 +281,7 @@ What makes this system visually distinctive from the sea of generic SaaS landing
 ```css
 :root {
   /* Colors */
-  --color-signal-blue: #007aff;
+  --color-signal-blue: #e8562b;
   --color-ink-black: #000000;
   --color-graphite: #3e3e3e;
   --color-smoke: #636363;
@@ -397,7 +399,7 @@ What makes this system visually distinctive from the sea of generic SaaS landing
 ```css
 @theme {
   /* Colors */
-  --color-signal-blue: #007aff;
+  --color-signal-blue: #e8562b;
   --color-ink-black: #000000;
   --color-graphite: #3e3e3e;
   --color-smoke: #636363;
