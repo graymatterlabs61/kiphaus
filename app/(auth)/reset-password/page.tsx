@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { StaggerList, StaggerItem } from "@/components/motion/stagger-list"
 
 export default function ResetPasswordPage() {
   return (
@@ -12,31 +13,38 @@ export default function ResetPasswordPage() {
         </p>
       </div>
 
-      <form className="space-y-5">
-        <div className="space-y-2">
-          <Label htmlFor="password" className="text-body-sm font-medium text-graphite tracking-body-sm">Password</Label>
-          <Input 
-            id="password" 
-            type="password" 
-            placeholder="••••••••" 
-            className="rounded-full h-[50px] px-5 bg-transparent border-border hover:border-graphite/50 transition-colors tracking-[0.2em] placeholder:tracking-[0.2em] text-body"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="confirm-password" className="text-body-sm font-medium text-graphite tracking-body-sm">Confirm password</Label>
-          <Input 
-            id="confirm-password" 
-            type="password" 
-            placeholder="••••••••" 
-            className="rounded-full h-[50px] px-5 bg-transparent border-border hover:border-graphite/50 transition-colors tracking-[0.2em] placeholder:tracking-[0.2em] text-body"
-          />
-        </div>
-
-        <div className="pt-4">
-          <Button type="submit" className="w-full rounded-full h-[50px] bg-primary hover:bg-primary/90 text-primary-foreground text-body font-semibold">
-            Reset password
-          </Button>
-        </div>
+      <form>
+        <StaggerList className="space-y-5" inView={false}>
+          <StaggerItem>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-body-sm font-medium text-graphite tracking-body-sm">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                className="rounded-full h-[50px] px-5 bg-transparent border-border hover:border-graphite/50 transition-colors tracking-[0.2em] placeholder:tracking-[0.2em] text-body"
+              />
+            </div>
+          </StaggerItem>
+          <StaggerItem>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password" className="text-body-sm font-medium text-graphite tracking-body-sm">Confirm password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                placeholder="••••••••"
+                className="rounded-full h-[50px] px-5 bg-transparent border-border hover:border-graphite/50 transition-colors tracking-[0.2em] placeholder:tracking-[0.2em] text-body"
+              />
+            </div>
+          </StaggerItem>
+          <StaggerItem>
+            <div className="pt-4">
+              <Button type="submit" className="w-full rounded-full h-[50px] bg-primary hover:bg-primary/90 text-primary-foreground text-body font-semibold">
+                Reset password
+              </Button>
+            </div>
+          </StaggerItem>
+        </StaggerList>
       </form>
     </div>
   )

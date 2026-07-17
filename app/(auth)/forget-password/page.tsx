@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft } from "lucide-react"
+import { StaggerList, StaggerItem } from "@/components/motion/stagger-list"
 
 export default function ForgetPasswordPage() {
   return (
@@ -19,20 +20,25 @@ export default function ForgetPasswordPage() {
         </p>
       </div>
 
-      <form className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-body-sm font-medium text-graphite tracking-body-sm">Email</Label>
-          <Input 
-            id="email" 
-            type="email" 
-            placeholder="you@example.com" 
-            className="rounded-full h-[50px] px-5 bg-transparent border-border hover:border-graphite/50 transition-colors text-body"
-          />
-        </div>
-
-        <Button type="submit" className="w-full rounded-full h-[50px] bg-primary hover:bg-primary/90 text-primary-foreground text-body font-semibold">
-          Reset password
-        </Button>
+      <form>
+        <StaggerList className="space-y-6" inView={false}>
+          <StaggerItem>
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-body-sm font-medium text-graphite tracking-body-sm">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                className="rounded-full h-[50px] px-5 bg-transparent border-border hover:border-graphite/50 transition-colors text-body"
+              />
+            </div>
+          </StaggerItem>
+          <StaggerItem>
+            <Button type="submit" className="w-full rounded-full h-[50px] bg-primary hover:bg-primary/90 text-primary-foreground text-body font-semibold">
+              Reset password
+            </Button>
+          </StaggerItem>
+        </StaggerList>
       </form>
     </div>
   )
