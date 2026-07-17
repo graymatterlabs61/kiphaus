@@ -2,6 +2,7 @@ import { LogOut } from "lucide-react"
 import { SiteHeader } from "@/components/layout/site-header"
 import { SiteFooter } from "@/components/layout/site-footer"
 import { AccountNav } from "@/components/features/guest/account-nav"
+import { FadeIn } from "@/components/motion/fade-in"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,6 +25,7 @@ export default function GuestAccountPage() {
           <AccountNav />
 
           <div className="min-w-0 flex-1 space-y-10">
+            <FadeIn inView={false} delay={0}>
             <section aria-labelledby="personal-info">
               <h2 id="personal-info" className="text-heading-sm font-semibold text-ink-black leading-heading-sm">
                 Personal info
@@ -51,9 +53,11 @@ export default function GuestAccountPage() {
                 </div>
               </form>
             </section>
+            </FadeIn>
 
             <Separator />
 
+            <FadeIn inView={false} delay={0.05}>
             <section aria-labelledby="security">
               <h2 id="security" className="text-heading-sm font-semibold text-ink-black leading-heading-sm">
                 Login & security
@@ -74,9 +78,11 @@ export default function GuestAccountPage() {
                 </div>
               </form>
             </section>
+            </FadeIn>
 
             <Separator />
 
+            <FadeIn inView={false} delay={0.1}>
             <section aria-labelledby="notifications">
               <h2 id="notifications" className="text-heading-sm font-semibold text-ink-black leading-heading-sm">
                 Notifications
@@ -105,9 +111,11 @@ export default function GuestAccountPage() {
                 </div>
               </div>
             </section>
+            </FadeIn>
 
             <Separator />
 
+            <FadeIn inView={false} delay={0.15}>
             <section>
               <p className="text-body-sm text-smoke tracking-body-sm">Member since {currentGuest.memberSince}</p>
               <Button
@@ -120,6 +128,7 @@ export default function GuestAccountPage() {
                 Log out
               </Button>
             </section>
+            </FadeIn>
           </div>
         </div>
       </main>

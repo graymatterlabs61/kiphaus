@@ -2,6 +2,8 @@ import { SiteHeader } from "@/components/layout/site-header"
 import { SiteFooter } from "@/components/layout/site-footer"
 import { AccountNav } from "@/components/features/guest/account-nav"
 import { WhatsAppThreadRow } from "@/components/features/guest/whatsapp-thread-row"
+import { FadeIn } from "@/components/motion/fade-in"
+import { StaggerList, StaggerItem } from "@/components/motion/stagger-list"
 import { messageThreads } from "@/lib/mock-data"
 
 export default function GuestMessagesPage() {
@@ -19,17 +21,19 @@ export default function GuestMessagesPage() {
               Every conversation happens directly on WhatsApp with your host — no platform inbox in between.
             </p>
             {messageThreads.length === 0 ? (
-              <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border px-6 py-20 text-center">
+              <FadeIn inView={false} className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border px-6 py-20 text-center">
                 <p className="max-w-sm text-body text-ink-black leading-body tracking-body">
                   No conversations yet. Contact a host from any listing to start one on WhatsApp.
                 </p>
-              </div>
+              </FadeIn>
             ) : (
-              <div className="space-y-3">
+              <StaggerList inView={false} className="space-y-3">
                 {messageThreads.map((thread) => (
-                  <WhatsAppThreadRow key={thread.id} thread={thread} />
+                  <StaggerItem key={thread.id}>
+                    <WhatsAppThreadRow thread={thread} />
+                  </StaggerItem>
                 ))}
-              </div>
+              </StaggerList>
             )}
           </div>
         </div>

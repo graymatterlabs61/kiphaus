@@ -2,6 +2,8 @@ import { SiteHeader } from "@/components/layout/site-header"
 import { SiteFooter } from "@/components/layout/site-footer"
 import { AccountNav } from "@/components/features/guest/account-nav"
 import { TripCard } from "@/components/features/guest/trip-card"
+import { FadeIn } from "@/components/motion/fade-in"
+import { StaggerList, StaggerItem } from "@/components/motion/stagger-list"
 import { Button } from "@/components/ui/button"
 import { trips } from "@/lib/mock-data"
 
@@ -20,14 +22,14 @@ export default function GuestTripsPage() {
 
           <div className="min-w-0 flex-1">
             {trips.length === 0 ? (
-              <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border px-6 py-20 text-center">
+              <FadeIn inView={false} className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border px-6 py-20 text-center">
                 <p className="max-w-sm text-body text-ink-black leading-body tracking-body">
                   No trips yet. Once you book a verified stay, it&rsquo;ll show up here.
                 </p>
                 <Button className="rounded-full h-[50px] px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold" render={<a href="/s" />} nativeButton={false}>
                   Search stays
                 </Button>
-              </div>
+              </FadeIn>
             ) : (
               <div className="space-y-10">
                 {upcoming.length > 0 && (
@@ -35,11 +37,13 @@ export default function GuestTripsPage() {
                     <h2 id="upcoming-trips" className="mb-4 text-heading-sm font-semibold text-ink-black leading-heading-sm">
                       Upcoming
                     </h2>
-                    <div className="space-y-4">
+                    <StaggerList inView={false} className="space-y-4">
                       {upcoming.map((trip) => (
-                        <TripCard key={trip.id} trip={trip} />
+                        <StaggerItem key={trip.id}>
+                          <TripCard trip={trip} />
+                        </StaggerItem>
                       ))}
-                    </div>
+                    </StaggerList>
                   </section>
                 )}
 
@@ -48,11 +52,13 @@ export default function GuestTripsPage() {
                     <h2 id="past-trips" className="mb-4 text-heading-sm font-semibold text-ink-black leading-heading-sm">
                       Past trips
                     </h2>
-                    <div className="space-y-4">
+                    <StaggerList inView={false} className="space-y-4">
                       {past.map((trip) => (
-                        <TripCard key={trip.id} trip={trip} />
+                        <StaggerItem key={trip.id}>
+                          <TripCard trip={trip} />
+                        </StaggerItem>
                       ))}
-                    </div>
+                    </StaggerList>
                   </section>
                 )}
               </div>
