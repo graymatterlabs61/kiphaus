@@ -3,6 +3,8 @@ import { SiteFooter } from "@/components/layout/site-footer"
 import { PageHero } from "@/components/features/public/page-hero"
 import { BlogCard } from "@/components/features/public/blog-card"
 import { blogPosts } from "@/lib/mock-data"
+import { FadeIn } from "@/components/motion/fade-in"
+import { StaggerList, StaggerItem } from "@/components/motion/stagger-list"
 
 export default function BlogPage() {
   const [featured, ...rest] = blogPosts
@@ -19,15 +21,17 @@ export default function BlogPage() {
 
         <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
           {featured && (
-            <div className="mb-14">
+            <FadeIn inView={false} className="mb-14">
               <BlogCard post={featured} priority />
-            </div>
+            </FadeIn>
           )}
-          <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+          <StaggerList className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
             {rest.map((post) => (
-              <BlogCard key={post.slug} post={post} />
+              <StaggerItem key={post.slug}>
+                <BlogCard post={post} />
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerList>
         </section>
       </main>
       <SiteFooter />
