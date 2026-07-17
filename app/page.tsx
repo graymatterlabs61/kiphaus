@@ -5,6 +5,8 @@ import { SearchBar } from "@/components/features/guest/search-bar"
 import { PropertyCard } from "@/components/features/guest/property-card"
 import { featuredProperties } from "@/lib/mock-data"
 import { Button } from "@/components/ui/button"
+import { FadeIn } from "@/components/motion/fade-in"
+import { StaggerList, StaggerItem } from "@/components/motion/stagger-list"
 
 export default function LandingPage() {
   // Mocking the two categories from the screenshot
@@ -18,9 +20,9 @@ export default function LandingPage() {
       <main className="pb-32">
         {/* Search Bar Section */}
         <section className="flex justify-center pt-8 pb-10 px-4">
-          <div className="w-full max-w-4xl">
+          <FadeIn inView={false} className="w-full max-w-4xl">
             <SearchBar className="w-full" />
-          </div>
+          </FadeIn>
         </section>
 
         {/* Listings Sections */}
@@ -32,11 +34,13 @@ export default function LandingPage() {
                 <span aria-hidden="true" className="text-xl">→</span>
               </Link>
             </div>
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <StaggerList className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {popularGoa.map((property) => (
-                <PropertyCard key={`goa-${property.id}`} property={property} />
+                <StaggerItem key={`goa-${property.id}`}>
+                  <PropertyCard property={property} />
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerList>
           </section>
 
           <section>
@@ -46,11 +50,13 @@ export default function LandingPage() {
                 <span aria-hidden="true" className="text-xl">→</span>
               </Link>
             </div>
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <StaggerList className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {chandigarhWeekend.map((property) => (
-                <PropertyCard key={`chd-${property.id}`} property={property} />
+                <StaggerItem key={`chd-${property.id}`}>
+                  <PropertyCard property={property} />
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerList>
           </section>
 
           <section>
@@ -60,11 +66,13 @@ export default function LandingPage() {
                 <span aria-hidden="true" className="text-xl">→</span>
               </Link>
             </div>
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <StaggerList className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {noidaStays.map((property) => (
-                <PropertyCard key={`noida-${property.id}`} property={property} />
+                <StaggerItem key={`noida-${property.id}`}>
+                  <PropertyCard property={property} />
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerList>
           </section>
         </div>
       </main>
