@@ -3,11 +3,14 @@
 import { useMemo, useState, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import type { DateRange } from "react-day-picker"
+import { motion, useReducedMotion } from "motion/react"
 import { Search, MapPin, Minus, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { HoverLift } from "@/components/motion/hover-lift"
 import { cn } from "@/lib/utils"
 import { searchCities } from "@/lib/mock-data"
 
@@ -18,7 +21,7 @@ const FLEXIBLE_OPTIONS = [
 ]
 
 const fieldClass =
-  "flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-5 py-3 text-left md:py-2 focus-visible:outline-none"
+  "relative flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-5 py-3 text-left md:py-2 focus-visible:outline-none"
 const labelClass =
   "text-micro font-semibold tracking-[0.08em] text-muted-foreground uppercase"
 const valueClass = "truncate text-sm font-medium text-foreground"
@@ -46,6 +49,8 @@ export function SearchBar({ className }: { className?: string }) {
   const [whenOpen, setWhenOpen] = useState(false)
   const [guests, setGuests] = useState(1)
   const [whoOpen, setWhoOpen] = useState(false)
+  const reduceMotion = useReducedMotion()
+  const activeField = whereOpen ? "where" : whenOpen ? "when" : whoOpen ? "who" : null
 
   const filteredCities = useMemo(
     () => searchCities.filter((option) => option.toLowerCase().includes(citySearch.toLowerCase())),
@@ -77,7 +82,8 @@ export function SearchBar({ className }: { className?: string }) {
     <form
       onSubmit={handleSubmit}
       className={cn(
-        "flex flex-col rounded-2xl border border-border bg-background shadow-md hover:shadow-lg transition-shadow md:flex-row md:items-stretch md:rounded-full",
+        "flex flex-col rounded-2xl border border-border bg-background shadow-md transition-shadow hover:shadow-lg md:flex-row md:items-stretch md:rounded-full",
+        activeField && "shadow-lg",
         className
       )}
     >
@@ -90,8 +96,15 @@ export function SearchBar({ className }: { className?: string }) {
           }}
         >
           <PopoverTrigger render={<button type="button" className={fieldClass} />}>
-            <span className={labelClass}>Where</span>
-            <span className={valueClass}>{city || "Search destinations"}</span>
+            {activeField === "where" && (
+              <motion.div
+                layoutId="search-field-highlight"
+                className="pointer-events-none absolute inset-1 rounded-full bg-muted"
+                transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 500, damping: 35 }}
+              />
+            )}
+            <span className={cn(labelClass, "relative")}>Where</span>
+            <span className={cn(valueClass, "relative")}>{city || "Search destinations"}</span>
           </PopoverTrigger>
           <PopoverContent className="w-80 p-0" align="start">
             <div className="p-2.5">
@@ -130,57 +143,51 @@ export function SearchBar({ className }: { className?: string }) {
 
         <Popover open={whenOpen} onOpenChange={setWhenOpen}>
           <PopoverTrigger render={<button type="button" className={fieldClass} />}>
-            <span className={labelClass}>When</span>
-            <span className={valueClass}>{whenLabel}</span>
+            {activeField === "when" && (
+              <motion.div
+                layoutId="search-field-highlight"
+                className="pointer-events-none absolute inset-1 rounded-full bg-muted"
+                transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 500, damping: 35 }}
+              />
+            )}
+            <span className={cn(labelClass, "relative")}>When</span>
+            <span className={cn(valueClass, "relative")}>{whenLabel}</span>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-3" align="start">
-            <div className="mb-2 flex gap-2">
-              <button
-                type="button"
-                onClick={() => setDateMode("dates")}
-                className={cn(
-                  "rounded-full px-3 py-1.5 text-body-sm font-medium tracking-body-sm",
-                  dateMode === "dates" ? "bg-ink-black text-white" : "text-graphite hover:bg-ash-mist"
-                )}
-              >
-                Dates
-              </button>
-              <button
-                type="button"
-                onClick={() => setDateMode("flexible")}
-                className={cn(
-                  "rounded-full px-3 py-1.5 text-body-sm font-medium tracking-body-sm",
-                  dateMode === "flexible" ? "bg-ink-black text-white" : "text-graphite hover:bg-ash-mist"
-                )}
-              >
-                Flexible
-              </button>
-            </div>
-
-            {dateMode === "dates" ? (
-              <Calendar
-                mode="range"
-                numberOfMonths={2}
-                selected={range}
-                onSelect={setRange}
-                disabled={{ before: new Date() }}
-              />
-            ) : (
-              <div className="flex flex-wrap gap-2 p-2">
-                {FLEXIBLE_OPTIONS.map((option) => (
-                  <button
-                    key={option.label}
-                    type="button"
-                    onClick={() => applyFlexible(option.days)}
-                    className="rounded-full border border-border px-4 py-2 text-body-sm font-medium text-graphite tracking-body-sm hover:bg-ash-mist"
-                  >
-                    {option.label}
-                  </button>
-                ))}
+            <Tabs value={dateMode} onValueChange={(val) => setDateMode(val as "dates" | "flexible")}>
+              <div className="mb-2 flex justify-center">
+                <TabsList>
+                  <TabsTrigger value="dates">Dates</TabsTrigger>
+                  <TabsTrigger value="flexible">Flexible</TabsTrigger>
+                </TabsList>
               </div>
-            )}
 
-            <div className="flex items-center justify-between border-t border-border pt-3">
+              <TabsContent value="dates">
+                <Calendar
+                  mode="range"
+                  numberOfMonths={2}
+                  selected={range}
+                  onSelect={setRange}
+                  disabled={{ before: new Date() }}
+                />
+              </TabsContent>
+              <TabsContent value="flexible">
+                <div className="flex flex-wrap gap-2 p-2 min-h-[300px]">
+                  {FLEXIBLE_OPTIONS.map((option) => (
+                    <button
+                      key={option.label}
+                      type="button"
+                      onClick={() => applyFlexible(option.days)}
+                      className="rounded-full border border-border px-4 py-2 h-fit text-body-sm font-medium text-graphite tracking-body-sm hover:bg-ash-mist"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            <div className="flex items-center justify-between border-t border-border pt-3 mt-3">
               <button
                 type="button"
                 onClick={() => setRange(undefined)}
@@ -197,8 +204,15 @@ export function SearchBar({ className }: { className?: string }) {
 
         <Popover open={whoOpen} onOpenChange={setWhoOpen}>
           <PopoverTrigger render={<button type="button" className={cn(fieldClass, "md:max-w-[160px]")} />}>
-            <span className={labelClass}>Who</span>
-            <span className={valueClass}>{guests} {guests === 1 ? "guest" : "guests"}</span>
+            {activeField === "who" && (
+              <motion.div
+                layoutId="search-field-highlight"
+                className="pointer-events-none absolute inset-1 rounded-full bg-muted"
+                transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 500, damping: 35 }}
+              />
+            )}
+            <span className={cn(labelClass, "relative")}>Who</span>
+            <span className={cn(valueClass, "relative")}>{guests} {guests === 1 ? "guest" : "guests"}</span>
           </PopoverTrigger>
           <PopoverContent className="w-72" align="end">
             <div className="flex items-center justify-between px-1 py-1.5">
@@ -233,13 +247,15 @@ export function SearchBar({ className }: { className?: string }) {
         </Popover>
       </div>
       <div className="flex items-center justify-center border-t border-border p-2.5 md:border-t-0 md:pr-2 md:pl-1">
-        <Button
-          type="submit"
-          aria-label="Search stays"
-          className="size-11 shrink-0 rounded-full bg-primary p-0 text-primary-foreground shadow-[var(--shadow-button)] hover:bg-primary/90"
-        >
-          <Search className="size-4" aria-hidden="true" />
-        </Button>
+        <HoverLift lift={0}>
+          <Button
+            type="submit"
+            aria-label="Search stays"
+            className="size-11 shrink-0 rounded-full bg-primary p-0 text-primary-foreground shadow-[var(--shadow-button)] hover:bg-primary/90"
+          >
+            <Search className="size-4" aria-hidden="true" />
+          </Button>
+        </HoverLift>
       </div>
     </form>
   )

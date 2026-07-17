@@ -213,6 +213,33 @@
     }
 }
 
+/*
+  Single-token classes for react-day-picker's `animate` prop: its
+  useAnimation hook calls classList.add()/remove() with the class string as
+  one token, so a space-separated Tailwind utility string throws
+  "contains HTML space characters". @apply collapses each into one class.
+*/
+@layer components {
+  .rdp-weeks-enter-right {
+    @apply animate-in fade-in slide-in-from-right-6 duration-200 ease-out;
+  }
+  .rdp-weeks-enter-left {
+    @apply animate-in fade-in slide-in-from-left-6 duration-200 ease-out;
+  }
+  .rdp-weeks-exit-left {
+    @apply animate-out fade-out slide-out-to-left-6 duration-200 ease-in;
+  }
+  .rdp-weeks-exit-right {
+    @apply animate-out fade-out slide-out-to-right-6 duration-200 ease-in;
+  }
+  .rdp-caption-fade-in {
+    @apply animate-in fade-in duration-150;
+  }
+  .rdp-caption-fade-out {
+    @apply animate-out fade-out duration-150;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

@@ -37,6 +37,7 @@ function Calendar({
         className
       )}
       captionLayout={captionLayout}
+      animate
       locale={locale}
       formatters={{
         formatMonthDropdown: (date) =>
@@ -131,6 +132,14 @@ function Calendar({
           defaultClassNames.disabled
         ),
         hidden: cn("invisible", defaultClassNames.hidden),
+        weeks_after_enter: "rdp-weeks-enter-right",
+        weeks_before_enter: "rdp-weeks-enter-left",
+        weeks_before_exit: "rdp-weeks-exit-left",
+        weeks_after_exit: "rdp-weeks-exit-right",
+        caption_after_enter: "rdp-caption-fade-in",
+        caption_before_enter: "rdp-caption-fade-in",
+        caption_before_exit: "rdp-caption-fade-out",
+        caption_after_exit: "rdp-caption-fade-out",
         ...classNames,
       }}
       components={{
