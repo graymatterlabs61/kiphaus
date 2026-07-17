@@ -5,6 +5,7 @@ import { PropertyForm } from "@/components/features/host/property-form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { FadeIn } from "@/components/motion/fade-in"
 
 const fieldClass =
   "rounded-full h-[50px] px-5 bg-transparent border-border hover:border-graphite/50 transition-colors text-body"
@@ -25,6 +26,7 @@ export default function HostOnboardingPage() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-14 sm:px-6 lg:px-8">
+        <FadeIn inView={false}>
         <h1 className="font-perfectly-nineties-regular text-heading text-ink-black leading-heading">
           Let&rsquo;s get you verified
         </h1>
@@ -59,6 +61,7 @@ export default function HostOnboardingPage() {
             </div>
           </div>
         </section>
+        </FadeIn>
 
         <Separator className="my-10" />
 
