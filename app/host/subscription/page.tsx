@@ -1,6 +1,7 @@
 import { HostShell } from "@/components/features/host/host-shell"
 import { SubscriptionPlanCard, SUBSCRIPTION_PLANS } from "@/components/features/host/subscription-plan-card"
 import { hostSubscription } from "@/lib/mock-data"
+import { StaggerList, StaggerItem } from "@/components/motion/stagger-list"
 
 export default function HostSubscriptionPage() {
   const renewalDate = new Date(hostSubscription.renewalDate).toLocaleDateString("en-IN", {
@@ -24,11 +25,13 @@ export default function HostSubscriptionPage() {
         </p>
       </div>
 
-      <div className="mt-10 grid gap-6 sm:grid-cols-2">
+      <StaggerList inView={false} className="mt-10 grid gap-6 sm:grid-cols-2">
         {SUBSCRIPTION_PLANS.map((plan) => (
-          <SubscriptionPlanCard key={plan.id} plan={plan} isCurrent={plan.id === hostSubscription.plan} />
+          <StaggerItem key={plan.id}>
+            <SubscriptionPlanCard plan={plan} isCurrent={plan.id === hostSubscription.plan} />
+          </StaggerItem>
         ))}
-      </div>
+      </StaggerList>
     </HostShell>
   )
 }

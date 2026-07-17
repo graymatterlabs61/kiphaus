@@ -2,6 +2,7 @@ import { HostShell } from "@/components/features/host/host-shell"
 import { VerificationTracker } from "@/components/features/host/verification-tracker"
 import { Progress, ProgressLabel, ProgressValue } from "@/components/ui/progress"
 import { hostVerificationSteps } from "@/lib/mock-data"
+import { StaggerList, StaggerItem } from "@/components/motion/stagger-list"
 
 export default function HostVerificationPage() {
   const approvedCount = hostVerificationSteps.filter((step) => step.status === "approved").length
@@ -26,9 +27,11 @@ export default function HostVerificationPage() {
         </Progress>
       </div>
 
-      <div className="mt-10">
-        <VerificationTracker steps={hostVerificationSteps} />
-      </div>
+      <StaggerList inView={false} className="mt-10">
+        <StaggerItem>
+          <VerificationTracker steps={hostVerificationSteps} />
+        </StaggerItem>
+      </StaggerList>
     </HostShell>
   )
 }
