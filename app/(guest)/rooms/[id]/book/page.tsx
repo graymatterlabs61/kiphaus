@@ -4,6 +4,7 @@ import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 import { SiteHeader } from "@/components/layout/site-header"
 import { SiteFooter } from "@/components/layout/site-footer"
+import { FadeIn } from "@/components/motion/fade-in"
 import { TrustBadgeRow } from "@/components/features/guest/trust-badge-row"
 import { WhatsAppGateModal } from "@/components/features/guest/whatsapp-gate-modal"
 import { Button } from "@/components/ui/button"
@@ -43,7 +44,7 @@ export default async function BookPropertyPage({ params }: { params: Promise<{ i
           surprise fees.
         </p>
 
-        <div className="mt-10 grid gap-10 md:grid-cols-[1fr_360px]">
+        <FadeIn inView={false} className="mt-10 grid gap-10 md:grid-cols-[1fr_360px]">
           <div className="space-y-8">
             <div className="flex gap-4 rounded-2xl border border-border p-4">
               <div className="relative aspect-square w-24 shrink-0 overflow-hidden rounded-xl bg-muted">
@@ -123,7 +124,7 @@ export default async function BookPropertyPage({ params }: { params: Promise<{ i
               </p>
             </div>
           </aside>
-        </div>
+        </FadeIn>
       </main>
       <SiteFooter />
     </>
