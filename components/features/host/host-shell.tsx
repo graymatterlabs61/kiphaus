@@ -1,5 +1,6 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
+import { FadeIn } from "@/components/motion/fade-in"
 import { LogoMark } from "@/components/shared/logo"
 import { HostNav } from "@/components/features/host/host-nav"
 import { currentHost } from "@/lib/mock-data"
@@ -31,7 +32,9 @@ export function HostShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 lg:px-8">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
+        <FadeIn inView={false}>{children}</FadeIn>
+      </main>
 
       <footer className="border-t border-border py-6">
         <p className="mx-auto max-w-6xl px-4 text-body-sm text-smoke tracking-body-sm sm:px-6 lg:px-8">
