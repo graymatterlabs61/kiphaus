@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Menu, X } from "lucide-react"
+import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { Button } from "@/components/ui/button"
 import { LogoMark } from "@/components/shared/logo"
 
@@ -14,6 +15,7 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
+  const reduceMotion = useReducedMotion()
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background">
@@ -63,28 +65,36 @@ export function SiteHeader() {
         </Button>
         
         {/* Mobile Nav Dropdown */}
-        {open && (
-          <nav className="absolute top-full left-0 flex w-full flex-col gap-1 border-b border-border bg-background p-4 shadow-lg md:hidden">
-            <Link
-              href="/s"
-              className="rounded-md px-3 py-3 text-base font-medium text-foreground hover:bg-muted"
+        <AnimatePresence>
+          {open && (
+            <motion.nav
+              initial={reduceMotion ? false : { opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+              transition={{ duration: reduceMotion ? 0 : 0.15, ease: "easeOut" }}
+              className="absolute top-full left-0 flex w-full flex-col gap-1 border-b border-border bg-background p-4 shadow-lg md:hidden"
             >
-              Search stays
-            </Link>
-            <Link
-              href="/host"
-              className="rounded-md px-3 py-3 text-base font-medium text-foreground hover:bg-muted"
-            >
-              Become a host
-            </Link>
-            <Link
-              href="/login"
-              className="rounded-md px-3 py-3 text-base font-medium text-foreground hover:bg-muted"
-            >
-              Log in
-            </Link>
-          </nav>
-        )}
+              <Link
+                href="/s"
+                className="rounded-md px-3 py-3 text-base font-medium text-foreground hover:bg-muted"
+              >
+                Search stays
+              </Link>
+              <Link
+                href="/host"
+                className="rounded-md px-3 py-3 text-base font-medium text-foreground hover:bg-muted"
+              >
+                Become a host
+              </Link>
+              <Link
+                href="/login"
+                className="rounded-md px-3 py-3 text-base font-medium text-foreground hover:bg-muted"
+              >
+                Log in
+              </Link>
+            </motion.nav>
+          )}
+        </AnimatePresence>
       </div>
     </header>
   )

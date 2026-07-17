@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { FadeIn } from "@/components/motion/fade-in"
 import { searchCities } from "@/lib/mock-data"
 
 const COMPANY_LINKS = [
@@ -16,7 +17,7 @@ const LEGAL_LINKS = [
 export function SiteFooter() {
   return (
     <footer className="mx-auto max-w-7xl px-4 py-16 text-sm text-muted-foreground">
-      <div className="grid gap-10 md:grid-cols-3">
+      <FadeIn className="grid gap-10 md:grid-cols-3">
         <div>
           <div className="flex items-center gap-2">
             <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-button">
@@ -53,7 +54,7 @@ export function SiteFooter() {
             ))}
           </ul>
         </div>
-      </div>
+      </FadeIn>
       <div className="mt-10 border-t border-border pt-6">
         <p className="font-medium text-foreground">Search by city</p>
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2">
