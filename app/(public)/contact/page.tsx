@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/layout/site-header"
 import { SiteFooter } from "@/components/layout/site-footer"
 import { PageHero } from "@/components/features/public/page-hero"
 import { ContactForm } from "@/components/features/public/contact-form"
+import { StaggerList, StaggerItem } from "@/components/motion/stagger-list"
 
 const CONTACT_OPTIONS = [
   {
@@ -40,22 +41,23 @@ export default function ContactPage() {
         />
 
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:px-8">
-          <div className="grid gap-6 sm:grid-cols-3">
+          <StaggerList className="grid gap-6 sm:grid-cols-3">
             {CONTACT_OPTIONS.map(({ icon: Icon, title, description, href, label }) => (
-              <a
-                key={title}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-2xl border border-border p-6 transition-colors hover:border-graphite/50"
-              >
-                <Icon className="size-6 text-primary" aria-hidden="true" />
-                <h3 className="mt-4 font-semibold text-ink-black">{title}</h3>
-                <p className="mt-1 text-body-sm text-smoke tracking-body-sm">{description}</p>
-                <p className="mt-3 text-body-sm font-semibold text-primary">{label}</p>
-              </a>
+              <StaggerItem key={title}>
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-2xl border border-border p-6 transition-colors hover:border-graphite/50"
+                >
+                  <Icon className="size-6 text-primary" aria-hidden="true" />
+                  <h3 className="mt-4 font-semibold text-ink-black">{title}</h3>
+                  <p className="mt-1 text-body-sm text-smoke tracking-body-sm">{description}</p>
+                  <p className="mt-3 text-body-sm font-semibold text-primary">{label}</p>
+                </a>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerList>
         </section>
 
         <section className="mx-auto max-w-2xl px-4 pb-24 sm:px-6 lg:px-8">
