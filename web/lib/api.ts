@@ -193,18 +193,22 @@ async function adaptDetail(raw: RawPropertyDetail): Promise<Property> {
     cleanliness: rating, accuracy: rating, checkIn: rating, communication: rating, location: rating, value: rating,
   }
   try {
-    const res = await fetch(`${API_URL}/api/v1/reviews/property/${raw.id}/`)
-    if (res.ok) {
-      const data: RawReviewsResponse = await res.json()
-      reviews = data.results.map(adaptReview)
-      // backend doesn't track "accuracy"/"checkIn" categories — stand in with the overall average
-      reviewBreakdown = {
-        cleanliness: data.ratings.avg_cleanliness,
-        accuracy: data.ratings.avg_overall,
-        checkIn: data.ratings.avg_overall,
-        communication: data.ratings.avg_communication,
-        location: data.ratings.avg_location,
-        value: data.ratings.avg_value,
+    if (API_URL) {
+      const res = await fetch(`${API_URL}/api/v1/reviews/property/${raw.id}/`, {
+        signal: AbortSignal.timeout(4000),
+      })
+      if (res.ok) {
+        const data: RawReviewsResponse = await res.json()
+        reviews = data.results.map(adaptReview)
+        // backend doesn't track "accuracy"/"checkIn" categories — stand in with the overall average
+        reviewBreakdown = {
+          cleanliness: data.ratings.avg_cleanliness,
+          accuracy: data.ratings.avg_overall,
+          checkIn: data.ratings.avg_overall,
+          communication: data.ratings.avg_communication,
+          location: data.ratings.avg_location,
+          value: data.ratings.avg_value,
+        }
       }
     }
   } catch {
@@ -266,25 +270,31 @@ function searchQueryString(params: SearchParams): string {
 
 /** Server-safe (no auth needed — AllowAny on the backend). */
 export async function fetchProperties(params: SearchParams = {}): Promise<Property[]> {
+  if (!API_URL) return []
   const qs = searchQueryString(params)
   try {
-    const res = await fetch(`${API_URL}/api/v1/properties/${qs ? `?${qs}` : ""}`, { next: { revalidate: 60 } })
+    const res = await fetch(`${API_URL}/api/v1/properties/${qs ? `?${qs}` : ""}`, {
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(4000),
+    })
     if (!res.ok) return []
     const data = await res.json()
     const results: RawPropertyListItem[] = Array.isArray(data) ? data : data.results ?? []
     return results.map(adaptListItem)
   } catch {
-    // API unreachable (down, network blip) — an unhandled rejection here crashes
-    // the whole page's Server Component render every time it's hit, which Next's
-    // dev overlay retries immediately, causing a fetch-fail/reload loop.
+    // API unreachable (down, network blip, or timeout during SSG)
     return []
   }
 }
 
 /** Server-safe (no auth needed). Returns null if the property doesn't exist. */
 export async function fetchPropertyById(id: string): Promise<Property | null> {
+  if (!API_URL) return null
   try {
-    const res = await fetch(`${API_URL}/api/v1/properties/${id}/`, { next: { revalidate: 60 } })
+    const res = await fetch(`${API_URL}/api/v1/properties/${id}/`, {
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(4000),
+    })
     if (!res.ok) return null
     const raw: RawPropertyDetail = await res.json()
     return adaptDetail(raw)
