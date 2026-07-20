@@ -8,35 +8,8 @@ import { useAuth } from "@/hooks"
 import { AuthError } from "@/lib/auth"
 import { createPaymentOrder, verifyPayment } from "@/lib/api"
 import { loadRazorpayScript, openRazorpayCheckout } from "@/lib/razorpay"
-import type { SubscriptionPlanId } from "@/types"
-
-type PlanDetail = {
-  id: SubscriptionPlanId
-  name: string
-  price: number
-  features: string[]
-}
-
-export const SUBSCRIPTION_PLANS: PlanDetail[] = [
-  {
-    id: "basic",
-    name: "Basic",
-    price: 1999,
-    features: ["1 listing", "WhatsApp booking integration", "Basic search visibility", "Identity & property verification"],
-  },
-  {
-    id: "premium",
-    name: "Premium",
-    price: 4999,
-    features: [
-      "Unlimited listings",
-      "Featured placement in search",
-      "Enhanced analytics",
-      "Premium Verified badge",
-      "Priority verification review",
-    ],
-  },
-]
+import { SUBSCRIPTION_PLANS, type PlanDetail } from "@/lib/subscription-plans"
+export { SUBSCRIPTION_PLANS, type PlanDetail }
 
 export function SubscriptionPlanCard({
   plan,

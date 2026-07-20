@@ -5,7 +5,8 @@ import { SiteFooter } from "@/components/layout/footer"
 import { PageHero } from "@/components/features/public/page-hero"
 import { VerificationLevels } from "@/components/features/public/verification-levels"
 import { CtaBanner } from "@/components/features/public/cta-banner"
-import { SubscriptionPlanCard, SUBSCRIPTION_PLANS } from "@/components/features/host/subscription-plan-card"
+import { SubscriptionPlanCard } from "@/components/features/host/subscription-plan-card"
+import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans"
 
 export const metadata: Metadata = {
   title: "List Your Property, Zero Commission",
