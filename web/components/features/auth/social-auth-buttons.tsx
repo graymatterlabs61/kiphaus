@@ -64,9 +64,10 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
         src="https://accounts.google.com/gsi/client"
         strategy="afterInteractive"
         onLoad={() => {
-          if (!window.google || !googleButtonRef.current) return
+          const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+          if (!clientId || !window.google || !googleButtonRef.current) return
           window.google.accounts.id.initialize({
-            client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "",
+            client_id: clientId,
             callback: (resp) => handleGoogleCredential(resp.credential),
           })
           window.google.accounts.id.renderButton(googleButtonRef.current, {
@@ -83,8 +84,10 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
         src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"
         strategy="afterInteractive"
         onLoad={() => {
-          window.AppleID?.auth.init({
-            clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID ?? "",
+          const clientId = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID
+          if (!clientId || !window.AppleID) return
+          window.AppleID.auth.init({
+            clientId,
             scope: "name email",
             redirectURI: window.location.origin,
             usePopup: true,
