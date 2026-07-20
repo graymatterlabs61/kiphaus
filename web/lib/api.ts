@@ -8,7 +8,7 @@
 // (wishlist/trips) go through `apiFetch` from lib/auth.ts and must be called
 // from Client Components (that's where the access token lives).
 
-import { apiFetch } from "@/lib/auth"
+import { apiFetch, apiFetchForm } from "@/lib/auth"
 import type {
   CancellationPolicy,
   HostBadge,
@@ -80,6 +80,8 @@ interface RawPhoto {
 
 interface RawAmenity {
   name: string
+  icon: string
+  category: string
 }
 
 interface RawPropertyDetail {
@@ -229,7 +231,7 @@ async function adaptDetail(raw: RawPropertyDetail): Promise<Property> {
     image: images[0],
     images,
     description: raw.description,
-    amenities: raw.amenities.map((a) => a.name),
+    amenities: raw.amenities.map((a) => ({ name: a.name, icon: a.icon, category: a.category })),
     houseRules: raw.house_rules ? raw.house_rules.split("\n").filter(Boolean) : [],
     cancellationPolicy: CANCELLATION_MAP[raw.cancellation_policy] ?? "Moderate",
     whatsappNumber: raw.host.phone,
@@ -309,8 +311,9 @@ export async function fetchWishlistStatus(propertyIds: string[]): Promise<Set<st
 
 /** Client-only (needs the Bearer token). */
 export async function fetchSavedProperties(): Promise<Property[]> {
-  const data: RawPropertyListItem[] = await apiFetch("/api/v1/wishlist/saved/")
-  return data.map(adaptListItem)
+  const data = await apiFetch("/api/v1/wishlist/saved/")
+  const results: RawPropertyListItem[] = Array.isArray(data) ? data : data.results ?? []
+  return results.map(adaptListItem)
 }
 
 interface RawBooking {
@@ -331,6 +334,147 @@ const TRIP_STATUS_MAP: Record<string, Trip["status"]> = {
   rejected: "cancelled",
 }
 
+export interface PricePreview {
+  nights: number
+  pricePerNight: number
+  subtotal: number
+  cleaningFee: number
+  serviceFee: number
+  total: number
+}
+
+interface RawPricePreview {
+  nights: number
+  price_per_night: string
+  subtotal: string
+  cleaning_fee: string
+  service_fee: string
+  total: string
+}
+
+/** Client-only (needs the Bearer token). Throws AuthError (via apiFetch) on invalid dates/availability. */
+export async function fetchPricePreview(input: {
+  propertyId: string
+  checkIn: string
+  checkOut: string
+  guests: number
+}): Promise<PricePreview> {
+  const raw: RawPricePreview = await apiFetch("/api/v1/bookings/price-preview/", {
+    method: "POST",
+    body: JSON.stringify({
+      property_id: Number(input.propertyId),
+      check_in: input.checkIn,
+      check_out: input.checkOut,
+      num_guests: input.guests,
+    }),
+  })
+  return {
+    nights: raw.nights,
+    pricePerNight: Number(raw.price_per_night),
+    subtotal: Number(raw.subtotal),
+    cleaningFee: Number(raw.cleaning_fee),
+    serviceFee: Number(raw.service_fee),
+    total: Number(raw.total),
+  }
+}
+
+/** Client-only (needs the Bearer token). Creates a real pending booking request. */
+export async function createBooking(input: {
+  propertyId: string
+  checkIn: string
+  checkOut: string
+  guests: number
+}): Promise<{ id: string }> {
+  const data = await apiFetch("/api/v1/bookings/", {
+    method: "POST",
+    body: JSON.stringify({
+      listing: Number(input.propertyId),
+      check_in: input.checkIn,
+      check_out: input.checkOut,
+      num_guests: input.guests,
+    }),
+  })
+  return { id: String(data.id) }
+}
+
+interface RawChatUser {
+  id: number
+  full_name: string
+  avatar: string | null
+}
+
+export interface ChatConversation {
+  id: string
+  property: { id: string; title: string; image?: string }
+  otherUser: { id: number; name: string; avatar: string | null }
+  lastMessage: { body: string; createdAt: string; senderId: number } | null
+  unreadCount: number
+  updatedAt: string
+}
+
+interface RawConversation {
+  id: number
+  property: RawPropertyListItem
+  other_user: RawChatUser
+  last_message: { body: string; created_at: string; sender_id: number } | null
+  unread_count: number
+  updated_at: string
+}
+
+function adaptConversation(raw: RawConversation): ChatConversation {
+  return {
+    id: String(raw.id),
+    property: { id: String(raw.property.id), title: raw.property.title, image: raw.property.cover_photo ?? undefined },
+    otherUser: { id: raw.other_user.id, name: raw.other_user.full_name, avatar: raw.other_user.avatar },
+    lastMessage: raw.last_message
+      ? { body: raw.last_message.body, createdAt: raw.last_message.created_at, senderId: raw.last_message.sender_id }
+      : null,
+    unreadCount: raw.unread_count,
+    updatedAt: raw.updated_at,
+  }
+}
+
+/** Client-only (needs the Bearer token). */
+export async function fetchConversations(): Promise<ChatConversation[]> {
+  const data = await apiFetch("/api/v1/chat/conversations/")
+  const results: RawConversation[] = Array.isArray(data) ? data : data.results ?? []
+  return results.map(adaptConversation)
+}
+
+/** Client-only (needs the Bearer token). Starts (or reuses) a conversation with the property's host. */
+export async function startConversation(propertyId: string): Promise<{ conversationId: string }> {
+  const data = await apiFetch("/api/v1/chat/start/", {
+    method: "POST",
+    body: JSON.stringify({ property_id: Number(propertyId) }),
+  })
+  return { conversationId: String(data.conversation_id) }
+}
+
+/** Client-only (needs the Bearer token). Booking must be a completed stay of the caller's. */
+export async function createReview(input: {
+  bookingId: string
+  overall: number
+  cleanliness: number
+  communication: number
+  location: number
+  value: number
+  comment: string
+}): Promise<{ id: string }> {
+  const data = await apiFetch("/api/v1/reviews/", {
+    method: "POST",
+    body: JSON.stringify({
+      booking: Number(input.bookingId),
+      overall: input.overall,
+      cleanliness: input.cleanliness,
+      communication: input.communication,
+      location: input.location,
+      value: input.value,
+      comment: input.comment,
+    }),
+  })
+  return { id: String(data.id) }
+}
+
 /** Client-only (needs the Bearer token). */
 export async function fetchMyTrips(): Promise<Trip[]> {
   const data: RawBooking[] = await apiFetch("/api/v1/bookings/my-trips/")
@@ -343,4 +487,364 @@ export async function fetchMyTrips(): Promise<Trip[]> {
     status: TRIP_STATUS_MAP[b.status] ?? "upcoming",
     totalPaid: b.status === "cancelled" || b.status === "rejected" ? 0 : Number(b.total_price),
   }))
+}
+
+// ── Host property management ─────────────────────────────────────────────────
+// Uses api/properties' real PropertyType/CancellationPolicy choices directly
+// (not the guest-facing PROPERTY_TYPE_MAP above, which is lossy in one direction
+// only — see the ponytail note near it).
+
+export const HOST_PROPERTY_TYPES: { value: string; label: string }[] = [
+  { value: "apartment", label: "Apartment" },
+  { value: "house", label: "House" },
+  { value: "villa", label: "Villa" },
+  { value: "studio", label: "Studio" },
+  { value: "cabin", label: "Cabin" },
+  { value: "hotel_room", label: "Hotel room" },
+  { value: "hostel", label: "Hostel" },
+  { value: "other", label: "Other" },
+]
+
+export const HOST_CANCELLATION_POLICIES: { value: string; label: string }[] = [
+  { value: "flexible", label: "Flexible" },
+  { value: "moderate", label: "Moderate" },
+  { value: "firm", label: "Firm" },
+]
+
+export interface Amenity {
+  id: number
+  name: string
+  icon: string
+  category: string
+}
+
+export interface PropertyPhoto {
+  id: string
+  image: string | null
+  isCover: boolean
+}
+
+export interface HostPropertySummary {
+  id: string
+  title: string
+  status: "draft" | "active" | "paused" | "archived"
+  city: string
+  region: string
+  pricePerNight: number
+  coverImage?: string
+  verificationLevel: VerificationLevel
+  avgRating: number
+  totalReviews: number
+  totalBookings: number
+}
+
+export interface PropertyDraft {
+  title: string
+  description: string
+  propertyType: string
+  addressLine1: string
+  addressLine2: string
+  city: string
+  state: string
+  country: string
+  postalCode: string
+  maxGuests: number
+  bedrooms: number
+  beds: number
+  bathrooms: number
+  pricePerNight: number
+  cleaningFee: number
+  minNights: number
+  maxNights: number
+  checkInTime: string
+  checkOutTime: string
+  houseRules: string
+  allowsPets: boolean
+  allowsSmoking: boolean
+  allowsParties: boolean
+  cancellationPolicy: string
+  amenityIds: number[]
+}
+
+interface RawHostProperty {
+  id: number
+  title: string
+  description: string
+  property_type: string
+  status: string
+  address_line1: string
+  address_line2: string
+  city: string
+  state: string
+  country: string
+  postal_code: string
+  max_guests: number
+  bedrooms: number
+  beds: number
+  bathrooms: string
+  price_per_night: string
+  cleaning_fee: string
+  min_nights: number
+  max_nights: number
+  check_in_time: string
+  check_out_time: string
+  house_rules: string
+  allows_pets: boolean
+  allows_smoking: boolean
+  allows_parties: boolean
+  cancellation_policy: string
+  amenities: { id: number; name: string }[]
+  photos: { id: number; image: string | null; is_cover: boolean }[]
+  avg_rating: string
+  total_reviews: number
+  total_bookings: number
+  verification_level: VerificationLevel
+}
+
+function draftToPayload(draft: PropertyDraft) {
+  return {
+    title: draft.title,
+    description: draft.description,
+    property_type: draft.propertyType,
+    address_line1: draft.addressLine1,
+    address_line2: draft.addressLine2,
+    city: draft.city,
+    state: draft.state,
+    country: draft.country,
+    postal_code: draft.postalCode,
+    max_guests: draft.maxGuests,
+    bedrooms: draft.bedrooms,
+    beds: draft.beds,
+    bathrooms: draft.bathrooms,
+    price_per_night: draft.pricePerNight,
+    cleaning_fee: draft.cleaningFee,
+    min_nights: draft.minNights,
+    max_nights: draft.maxNights,
+    check_in_time: draft.checkInTime,
+    check_out_time: draft.checkOutTime,
+    house_rules: draft.houseRules,
+    allows_pets: draft.allowsPets,
+    allows_smoking: draft.allowsSmoking,
+    allows_parties: draft.allowsParties,
+    cancellation_policy: draft.cancellationPolicy,
+    amenity_ids: draft.amenityIds,
+  }
+}
+
+/** Client-only (needs the Bearer token). */
+export async function fetchAmenities(): Promise<Amenity[]> {
+  const data = await apiFetch("/api/v1/properties/amenities/")
+  return Array.isArray(data) ? data : data.results ?? []
+}
+
+/** Client-only (needs the Bearer token). */
+export async function fetchMyProperties(): Promise<HostPropertySummary[]> {
+  const data: RawHostProperty[] = await apiFetch("/api/v1/properties/mine/")
+  return data.map((p) => ({
+    id: String(p.id),
+    title: p.title,
+    status: p.status as HostPropertySummary["status"],
+    city: p.city,
+    region: p.state,
+    pricePerNight: Number(p.price_per_night),
+    coverImage: p.photos.find((ph) => ph.is_cover)?.image ?? p.photos[0]?.image ?? undefined,
+    verificationLevel: p.verification_level,
+    avgRating: Number(p.avg_rating),
+    totalReviews: p.total_reviews,
+    totalBookings: p.total_bookings,
+  }))
+}
+
+/** Client-only (needs the Bearer token). */
+export async function fetchHostProperty(id: string): Promise<PropertyDraft & { id: string; status: string; photos: PropertyPhoto[] }> {
+  const p: RawHostProperty = await apiFetch(`/api/v1/properties/${id}/`)
+  return {
+    id: String(p.id),
+    status: p.status,
+    title: p.title,
+    description: p.description,
+    propertyType: p.property_type,
+    addressLine1: p.address_line1,
+    addressLine2: p.address_line2,
+    city: p.city,
+    state: p.state,
+    country: p.country,
+    postalCode: p.postal_code,
+    maxGuests: p.max_guests,
+    bedrooms: p.bedrooms,
+    beds: p.beds,
+    bathrooms: Number(p.bathrooms),
+    pricePerNight: Number(p.price_per_night),
+    cleaningFee: Number(p.cleaning_fee),
+    minNights: p.min_nights,
+    maxNights: p.max_nights,
+    checkInTime: p.check_in_time,
+    checkOutTime: p.check_out_time,
+    houseRules: p.house_rules,
+    allowsPets: p.allows_pets,
+    allowsSmoking: p.allows_smoking,
+    allowsParties: p.allows_parties,
+    cancellationPolicy: p.cancellation_policy,
+    amenityIds: p.amenities.map((a) => a.id),
+    photos: p.photos.map((ph) => ({ id: String(ph.id), image: ph.image, isCover: ph.is_cover })),
+  }
+}
+
+/** Client-only (needs the Bearer token). */
+export async function createProperty(draft: PropertyDraft): Promise<{ id: string }> {
+  const data = await apiFetch("/api/v1/properties/", {
+    method: "POST",
+    body: JSON.stringify(draftToPayload(draft)),
+  })
+  return { id: String(data.id) }
+}
+
+/** Client-only (needs the Bearer token). */
+export async function updateProperty(id: string, draft: PropertyDraft): Promise<void> {
+  await apiFetch(`/api/v1/properties/${id}/`, {
+    method: "PATCH",
+    body: JSON.stringify(draftToPayload(draft)),
+  })
+}
+
+/** Client-only (needs the Bearer token). Throws AuthError with the backend's reason (e.g. "needs a photo") on failure. */
+export async function publishProperty(id: string): Promise<void> {
+  await apiFetch(`/api/v1/properties/${id}/publish/`, { method: "POST" })
+}
+
+/** Client-only (needs the Bearer token). */
+export async function unpublishProperty(id: string): Promise<void> {
+  await apiFetch(`/api/v1/properties/${id}/unpublish/`, { method: "POST" })
+}
+
+/** Client-only (needs the Bearer token). */
+export async function uploadPropertyPhoto(propertyId: string, file: File): Promise<PropertyPhoto> {
+  const formData = new FormData()
+  formData.append("image_upload", file)
+  const data = (await apiFetchForm(`/api/v1/properties/${propertyId}/photos/`, formData)) as {
+    id: number
+    image: string | null
+    is_cover: boolean
+  }
+  return { id: String(data.id), image: data.image, isCover: data.is_cover }
+}
+
+/** Client-only (needs the Bearer token). */
+export async function deletePropertyPhoto(photoId: string): Promise<void> {
+  await apiFetch(`/api/v1/properties/photos/${photoId}/`, { method: "DELETE" })
+}
+
+// ── Host analytics ────────────────────────────────────────────────────────────
+
+export interface HostAnalytics {
+  earnings: { total: number; thisMonth: number; thisYear: number; monthlyChart: { month: string; earnings: number }[] }
+  bookings: { total: number; byStatus: Record<string, number>; upcoming: UpcomingBooking[] }
+  properties: { total: number; active: number }
+  reviews: { avgRating: number; total: number }
+}
+
+export interface UpcomingBooking {
+  id: string
+  guestName: string
+  property: string
+  checkIn: string
+  checkOut: string
+  nights: number
+  total: number
+}
+
+/** Client-only (needs the Bearer token). */
+export async function fetchHostAnalytics(): Promise<HostAnalytics> {
+  const data = await apiFetch("/api/v1/analytics/host/")
+  return {
+    earnings: {
+      total: data.earnings.total,
+      thisMonth: data.earnings.this_month,
+      thisYear: data.earnings.this_year,
+      monthlyChart: data.earnings.monthly_chart,
+    },
+    bookings: {
+      total: data.bookings.total,
+      byStatus: data.bookings.by_status,
+      upcoming: data.bookings.upcoming.map((b: { id: number; guest_name: string; property: string; check_in: string; check_out: string; nights: number; total: string }) => ({
+        id: String(b.id),
+        guestName: b.guest_name,
+        property: b.property,
+        checkIn: b.check_in,
+        checkOut: b.check_out,
+        nights: b.nights,
+        total: Number(b.total),
+      })),
+    },
+    properties: { total: data.properties.total, active: data.properties.active },
+    reviews: { avgRating: data.reviews.avg_rating, total: data.reviews.total },
+  }
+}
+
+// ── Host verification ────────────────────────────────────────────────────────
+
+export interface VerificationStep {
+  level: 1 | 2 | 3 | 4
+  status: "not_started" | "in_review" | "approved" | "rejected"
+  detail: string
+  submittedAt: string | null
+  reviewedAt: string | null
+}
+
+/** Client-only (needs the Bearer token). Auto-creates the 4 rows on first read. */
+export async function fetchMyVerificationSteps(): Promise<VerificationStep[]> {
+  const data = await apiFetch("/api/v1/verification/me/")
+  return data.map((s: { level: number; status: string; detail: string; submitted_at: string | null; reviewed_at: string | null }) => ({
+    level: s.level,
+    status: s.status,
+    detail: s.detail,
+    submittedAt: s.submitted_at,
+    reviewedAt: s.reviewed_at,
+  }))
+}
+
+/** Client-only (needs the Bearer token). Enforces sequential level approval server-side. */
+export async function submitVerificationLevel(level: number, detail = ""): Promise<VerificationStep> {
+  const s = await apiFetch("/api/v1/verification/me/submit/", {
+    method: "POST",
+    body: JSON.stringify({ level, detail }),
+  })
+  return { level: s.level, status: s.status, detail: s.detail, submittedAt: s.submitted_at, reviewedAt: s.reviewed_at }
+}
+
+// ── Host subscription (Razorpay) ─────────────────────────────────────────────
+
+export interface HostSubscription {
+  plan: "basic" | "premium"
+  status: "pending" | "active" | "expired" | "cancelled"
+  currentPeriodEnd: string | null
+}
+
+/** Client-only (needs the Bearer token). Null if the host has never started checkout. */
+export async function fetchMySubscription(): Promise<HostSubscription | null> {
+  const data = await apiFetch("/api/v1/payments/subscription/")
+  if (!data) return null
+  return { plan: data.plan, status: data.status, currentPeriodEnd: data.current_period_end }
+}
+
+/** Client-only (needs the Bearer token). */
+export async function createPaymentOrder(plan: "basic" | "premium"): Promise<{ orderId: string; amount: number; currency: string; keyId: string }> {
+  const data = await apiFetch("/api/v1/payments/create-order/", {
+    method: "POST",
+    body: JSON.stringify({ plan }),
+  })
+  return { orderId: data.order_id, amount: data.amount, currency: data.currency, keyId: data.key_id }
+}
+
+/** Client-only (needs the Bearer token). */
+export async function verifyPayment(input: { orderId: string; paymentId: string; signature: string }): Promise<HostSubscription> {
+  const data = await apiFetch("/api/v1/payments/verify/", {
+    method: "POST",
+    body: JSON.stringify({
+      razorpay_order_id: input.orderId,
+      razorpay_payment_id: input.paymentId,
+      razorpay_signature: input.signature,
+    }),
+  })
+  return { plan: data.plan, status: data.status, currentPeriodEnd: data.current_period_end }
 }

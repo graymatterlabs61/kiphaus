@@ -13,6 +13,9 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
 # ── Apps ──────────────────────────────────────────────────────────────────────
 DJANGO_APPS = [
+    # Must be first: lets `manage.py runserver` auto-upgrade to ASGI/Daphne so
+    # api/chat's websocket route (ws/chat/...) is actually served in dev.
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -148,9 +151,15 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
 
 # ── Stripe ────────────────────────────────────────────────────────────────────
+# Unused — installed in requirements.txt but host billing runs on Razorpay (below).
 STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY", default="")
 STRIPE_PUBLISHABLE_KEY = env("STRIPE_PUBLISHABLE_KEY", default="")
 STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET", default="")
+
+# ── Razorpay (host subscription billing) ───────────────────────────────────────
+RAZORPAY_KEY_ID = env("RAZORPAY_KEY_ID", default="")
+RAZORPAY_KEY_SECRET = env("RAZORPAY_KEY_SECRET", default="")
+RAZORPAY_WEBHOOK_SECRET = env("RAZORPAY_WEBHOOK_SECRET", default="")
 
 # ── AWS S3 ────────────────────────────────────────────────────────────────────
 AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID", default="")

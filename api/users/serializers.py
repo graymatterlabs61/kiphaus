@@ -34,9 +34,9 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             "id", "email", "username", "first_name", "last_name",
             "full_name", "role", "phone", "phone_verified",
-            "avatar", "avatar_upload", "bio", "is_verified", "created_at",
+            "avatar", "avatar_upload", "bio", "is_verified", "email_verified", "created_at",
         ]
-        read_only_fields = ["id", "email", "role", "phone_verified", "is_verified", "created_at"]
+        read_only_fields = ["id", "email", "role", "phone_verified", "is_verified", "email_verified", "created_at"]
 
     def get_avatar(self, obj):
         if not obj.avatar:
@@ -54,6 +54,11 @@ class UserSerializer(serializers.ModelSerializer):
         import os
         cloud = os.environ.get('CLOUDINARY_CLOUD_NAME', 'cgtjcyy4')
         return f"https://res.cloudinary.com/{cloud}/image/upload/{url}"
+
+class BecomeHostSerializer(serializers.Serializer):
+    phone = serializers.CharField(required=False, allow_blank=True)
+    bio   = serializers.CharField(required=False, allow_blank=True)
+
 
 class HostProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -96,6 +101,11 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         if attrs["new_password1"] != attrs["new_password2"]:
             raise serializers.ValidationError({"new_password2": "Passwords do not match."})
         return attrs
+
+
+class VerifyEmailConfirmSerializer(serializers.Serializer):
+    uid   = serializers.CharField()
+    token = serializers.CharField()
 
 
 class SocialLoginSerializer(serializers.Serializer):

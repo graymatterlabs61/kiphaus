@@ -41,7 +41,7 @@ export default function SignupPage() {
         password2: confirmPassword,
         first_name: name,
       })
-      router.push("/")
+      router.push("/verify")
     } catch (err) {
       setError(err instanceof AuthError ? err.message : "Something went wrong. Please try again.")
     } finally {

@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.eggs/
+
+# Virtual envs
+venv/
+.venv/
+env/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Env files — .env holds real per-developer secrets, never commit it.
+# .env.docker ships tracked: docker-compose depends on it and it currently
+# holds only fixed dev-container values (db/redis creds, Stripe test placeholders,
+# no real secret). If it ever gains a real value, split it and ignore that file instead.
+.env
+!.env.example
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Celery
+celerybeat-schedule
+celerybeat.pid

@@ -2,11 +2,15 @@ from unittest.mock import patch
 
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
+from django.core import mail
 from django.db import IntegrityError
 from django.test import TestCase
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
-from .models import SocialAccount, User
+from .models import HostProfile, SocialAccount, User
 from .social import SocialAuthError, resolve_social_user, verify_apple_token, verify_google_token
+from .tokens import email_verification_token
 
 
 class PasswordValidationTests(TestCase):
@@ -123,3 +127,95 @@ class SocialLoginViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["user"]["email"], "new-apple@example.com")
         self.assertIn("kh_refresh", response.cookies)
+
+
+class BecomeHostViewTests(TestCase):
+    def setUp(self):
+        from rest_framework.test import APIClient
+        self.client = APIClient()
+        self.user = User.objects.create_user(username="dana", email="dana@example.com")
+
+    def test_upgrades_role_and_creates_host_profile(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.post("/api/v1/users/me/become-host/", {"phone": "+911234567890", "bio": "Host bio"}, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.role, User.Role.HOST)
+        self.assertEqual(self.user.phone, "+911234567890")
+        self.assertEqual(self.user.bio, "Host bio")
+        self.assertTrue(HostProfile.objects.filter(user=self.user).exists())
+
+    def test_idempotent_for_existing_host(self):
+        self.client.force_authenticate(self.user)
+        self.client.post("/api/v1/users/me/become-host/", {}, format="json")
+        HostProfile.objects.filter(user=self.user).delete()  # simulate a stray missing profile
+        response = self.client.post("/api/v1/users/me/become-host/", {}, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(HostProfile.objects.filter(user=self.user).exists())
+
+    def test_requires_authentication(self):
+        response = self.client.post("/api/v1/users/me/become-host/", {}, format="json")
+        self.assertEqual(response.status_code, 401)
+
+
+class EmailVerificationTests(TestCase):
+    def setUp(self):
+        from rest_framework.test import APIClient
+        self.client = APIClient()
+        self.user = User.objects.create_user(username="erin", email="erin@example.com")
+
+    def test_register_sends_a_verification_email(self):
+        response = self.client.post("/api/v1/auth/register/", {
+            "email": "new-signup@example.com",
+            "username": "newsignup",
+            "password": "correct-horse-battery-staple-9",
+            "password2": "correct-horse-battery-staple-9",
+        }, format="json")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("new-signup@example.com", mail.outbox[0].to)
+
+    def test_resend_sends_another_email_when_unverified(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.post("/api/v1/auth/verify-email/resend/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_resend_is_a_noop_once_verified(self):
+        self.user.email_verified = True
+        self.user.save(update_fields=["email_verified"])
+        self.client.force_authenticate(self.user)
+        self.client.post("/api/v1/auth/verify-email/resend/")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_confirm_with_valid_token_marks_verified(self):
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        token = email_verification_token.make_token(self.user)
+        response = self.client.post("/api/v1/auth/verify-email/confirm/", {"uid": uid, "token": token}, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.email_verified)
+
+    def test_confirm_token_is_single_use(self):
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        token = email_verification_token.make_token(self.user)
+        self.client.post("/api/v1/auth/verify-email/confirm/", {"uid": uid, "token": token}, format="json")
+        # Token hashes in email_verified, which is now True — the same token no longer checks out.
+        response = self.client.post("/api/v1/auth/verify-email/confirm/", {"uid": uid, "token": token}, format="json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_confirm_rejects_bad_token(self):
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        response = self.client.post("/api/v1/auth/verify-email/confirm/", {"uid": uid, "token": "garbage"}, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.email_verified)
+
+    def test_a_password_reset_token_does_not_verify_email(self):
+        """Distinct key_salt must keep the two token purposes from being interchangeable."""
+        from django.contrib.auth.tokens import default_token_generator
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        password_reset_token = default_token_generator.make_token(self.user)
+        response = self.client.post("/api/v1/auth/verify-email/confirm/", {"uid": uid, "token": password_reset_token}, format="json")
+        self.assertEqual(response.status_code, 400)

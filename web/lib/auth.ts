@@ -103,6 +103,30 @@ export async function apiFetch(path: string, opts: RequestInit = {}, allowRefres
   return res.json()
 }
 
+/** Like apiFetch, but for multipart bodies (file uploads) — must NOT set
+ * Content-Type: application/json, the browser sets the multipart boundary itself. */
+export async function apiFetchForm(
+  path: string,
+  formData: FormData,
+  method: "POST" | "PATCH" = "POST",
+  allowRefresh = true
+): Promise<unknown> {
+  const res = await fetch(`${API_URL}${path}`, {
+    method,
+    credentials: "include",
+    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+    body: formData,
+  })
+
+  if (res.status === 401 && allowRefresh) {
+    const refreshed = await refreshAccessToken()
+    if (refreshed) return apiFetchForm(path, formData, method, false)
+  }
+
+  if (!res.ok) return throwAuthError(res)
+  return res.json()
+}
+
 export async function login(email: string, password: string): Promise<AuthUser> {
   const data = await apiFetch("/api/v1/auth/login/", {
     method: "POST",
@@ -174,6 +198,30 @@ export function getCurrentUser(): Promise<AuthUser> {
   return apiFetch("/api/v1/auth/me/")
 }
 
+/** Updates the signed-in user's editable profile fields (name/phone/bio — email and role are read-only). */
+export function updateProfile(input: { first_name?: string; last_name?: string; phone?: string; bio?: string }): Promise<AuthUser> {
+  return apiFetch("/api/v1/users/me/", { method: "PATCH", body: JSON.stringify(input) })
+}
+
+export function changePassword(input: { old_password: string; new_password: string }): Promise<{ detail: string }> {
+  return apiFetch("/api/v1/auth/change-password/", { method: "PATCH", body: JSON.stringify(input) })
+}
+
+/** Updates the signed-in user's avatar (multipart — MeView's avatar_upload field). */
+export async function updateAvatar(file: File): Promise<AuthUser> {
+  const formData = new FormData()
+  formData.append("avatar_upload", file)
+  return apiFetchForm("/api/v1/users/me/", formData, "PATCH") as Promise<AuthUser>
+}
+
+/** Upgrades the signed-in guest to a host (role=host + HostProfile), idempotent. */
+export function becomeHost(input: { phone?: string; bio?: string } = {}): Promise<AuthUser> {
+  return apiFetch("/api/v1/users/me/become-host/", {
+    method: "POST",
+    body: JSON.stringify(input),
+  })
+}
+
 export function requestPasswordReset(email: string): Promise<{ detail: string }> {
   return apiFetch("/api/v1/auth/password/reset/", {
     method: "POST",
@@ -188,6 +236,19 @@ export function confirmPasswordReset(input: {
   new_password2: string
 }): Promise<{ detail: string }> {
   return apiFetch("/api/v1/auth/password/reset/confirm/", {
+    method: "POST",
+    body: JSON.stringify(input),
+  }, false)
+}
+
+/** Signed-in only — resends to the current user's own email. */
+export function resendVerificationEmail(): Promise<{ detail: string }> {
+  return apiFetch("/api/v1/auth/verify-email/resend/", { method: "POST" })
+}
+
+/** No session required — reachable from a cold email-link click. */
+export function confirmVerificationEmail(input: { uid: string; token: string }): Promise<{ detail: string }> {
+  return apiFetch("/api/v1/auth/verify-email/confirm/", {
     method: "POST",
     body: JSON.stringify(input),
   }, false)

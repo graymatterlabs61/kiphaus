@@ -1,0 +1,113 @@
+# Full-stack local dev: Next.js + Django + Postgres + Redis + Celery.
+# Run from the repo root: `docker compose up`.
+# (api/docker-compose.yml still works standalone for backend-only dev.)
+
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: kiphaus_db
+    environment:
+      POSTGRES_DB: rentaldb
+      POSTGRES_USER: rentaluser
+      POSTGRES_PASSWORD: rentalpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rentaluser -d rentaldb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Redis ───────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: kiphaus_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── Django API ──────────────────────────────────────────────────────────────
+  api:
+    build: ./api
+    container_name: kiphaus_api
+    entrypoint: ["/app/entrypoint.sh"]
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./api:/app
+      - media_files:/app/media
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./api/.env.docker
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Celery worker ────────────────────────────────────────────────────────────
+  celery:
+    build: ./api
+    container_name: kiphaus_celery
+    entrypoint: []
+    command: celery -A core worker --loglevel=info
+    volumes:
+      - ./api:/app
+    env_file:
+      - ./api/.env.docker
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Celery beat (scheduled tasks) ───────────────────────────────────────────
+  celery-beat:
+    build: ./api
+    container_name: kiphaus_celery_beat
+    entrypoint: []
+    command: celery -A core beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ./api:/app
+    env_file:
+      - ./api/.env.docker
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Next.js frontend ─────────────────────────────────────────────────────────
+  # Stops at the `deps` build stage (package.json + node_modules only) and runs
+  # `next dev` with the source bind-mounted, for live reload — the same
+  # live-reload pattern the api service uses. `web/Dockerfile`'s own default
+  # (full multi-stage build -> `node server.js`) is the production image;
+  # build it directly (`docker build ./web`) for that, this compose file is dev-only.
+  web:
+    build:
+      context: ./web
+      target: deps
+    container_name: kiphaus_web
+    command: npm run dev
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  media_files:

@@ -15,6 +15,7 @@ class User(AbstractUser):
     avatar      = models.ImageField(upload_to="avatars/", blank=True, null=True)
     bio         = models.TextField(blank=True)
     is_verified = models.BooleanField(default=False)   # ID-verified host/guest
+    email_verified = models.BooleanField(default=False)
     created_at  = models.DateTimeField(auto_now_add=True)
     updated_at  = models.DateTimeField(auto_now=True)
 

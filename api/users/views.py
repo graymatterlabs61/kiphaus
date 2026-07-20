@@ -13,19 +13,36 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .models import User
+from .models import HostProfile, User
 from .serializers import (
+    BecomeHostSerializer,
     ChangePasswordSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
     RegisterSerializer,
     SocialLoginSerializer,
     UserSerializer,
+    VerifyEmailConfirmSerializer,
 )
 from .social import SocialAuthError, resolve_social_user, verify_apple_token, verify_google_token
 from .throttles import AuthRateThrottle
+from .tokens import email_verification_token
 
 REFRESH_COOKIE_NAME = "kh_refresh"
+
+
+def _send_verification_email(user):
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = email_verification_token.make_token(user)
+    frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
+    link = f"{frontend_url}/verify?uid={uid}&token={token}"
+    send_mail(
+        subject="Verify your Kiphaus email",
+        message=f"Confirm your email address: {link}\n\nIf you didn't create a Kiphaus account, you can ignore this email.",
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=True,
+    )
 
 
 def _cookie_domain():
@@ -81,6 +98,7 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        _send_verification_email(user)
         refresh = RefreshToken.for_user(user)
         response = Response({
             "user":   UserSerializer(user).data,
@@ -88,6 +106,40 @@ class RegisterView(generics.CreateAPIView):
         }, status=status.HTTP_201_CREATED)
         _set_refresh_cookie(response, str(refresh))
         return response
+
+
+class VerifyEmailResendView(APIView):
+    permission_classes = [IsAuthenticated]
+    throttle_classes   = [AuthRateThrottle]
+
+    def post(self, request):
+        if not request.user.email_verified:
+            _send_verification_email(request.user)
+        return Response({"detail": "If your email isn't verified yet, a new link has been sent."})
+
+
+class VerifyEmailConfirmView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes   = [AuthRateThrottle]
+
+    def post(self, request):
+        serializer = VerifyEmailConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        try:
+            uid = force_str(urlsafe_base64_decode(data["uid"]))
+            user = User.objects.get(pk=uid)
+        except (User.DoesNotExist, ValueError, TypeError, OverflowError):
+            return Response({"detail": "This verification link is invalid or has expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not email_verification_token.check_token(user, data["token"]):
+            return Response({"detail": "This verification link is invalid or has expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not user.email_verified:
+            user.email_verified = True
+            user.save(update_fields=["email_verified"])
+        return Response({"detail": "Email verified."})
 
 
 class CookieTokenRefreshView(TokenRefreshView):
@@ -137,6 +189,32 @@ class MeView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class BecomeHostView(APIView):
+    """POST /api/v1/users/me/become-host/ — upgrade the authenticated guest to a host.
+    role is read_only on UserSerializer/MeView by design (prevents arbitrary self-promotion
+    via a generic profile PATCH); this is the one deliberate, narrow path to HOST."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = BecomeHostSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = request.user
+        if user.role != User.Role.HOST:
+            user.role = User.Role.HOST
+            update_fields = ["role"]
+            if serializer.validated_data.get("phone"):
+                user.phone = serializer.validated_data["phone"]
+                update_fields.append("phone")
+            if serializer.validated_data.get("bio"):
+                user.bio = serializer.validated_data["bio"]
+                update_fields.append("bio")
+            user.save(update_fields=update_fields)
+
+        HostProfile.objects.get_or_create(user=user)
+        return Response(UserSerializer(user).data)
 
 
 class ChangePasswordView(generics.UpdateAPIView):

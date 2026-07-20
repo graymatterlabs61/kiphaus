@@ -20,6 +20,9 @@ if not _allowed_hosts:
 ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(",") if h.strip()]
 
 DJANGO_APPS = [
+    # Must be first: lets `manage.py runserver` auto-upgrade to ASGI/Daphne so
+    # api/chat's websocket route (ws/chat/...) is actually served.
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -189,9 +192,15 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 # ── Stripe ────────────────────────────────────────────────────────────────────
+# Unused — installed in requirements.txt but host billing runs on Razorpay (below).
 STRIPE_SECRET_KEY     = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_PUBLISHABLE_KEY= os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+
+# ── Razorpay (host subscription billing) ───────────────────────────────────────
+RAZORPAY_KEY_ID         = os.environ.get("RAZORPAY_KEY_ID", "")
+RAZORPAY_KEY_SECRET     = os.environ.get("RAZORPAY_KEY_SECRET", "")
+RAZORPAY_WEBHOOK_SECRET = os.environ.get("RAZORPAY_WEBHOOK_SECRET", "")
 
 # ── i18n ──────────────────────────────────────────────────────────────────────
 LANGUAGE_CODE = "en-us"

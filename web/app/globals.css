@@ -1,0 +1,250 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Micro design system (DESIGN.md): warm paper-on-ink neutrals (#f5f5f5
+  canvas, #221f1c ink, #797267 stone gray) with one azure action color
+  (#518bdb) and a blue→teal hero gradient. Token *names* below are legacy
+  (signal-blue, graphite, smoke, ash-mist…) — components reference them and
+  semantic tokens, so only values are repointed to keep this a
+  single-file retheme. Shape, spacing, and type scale intentionally
+  untouched: colors only.
+*/
+@theme inline {
+    --color-signal-blue: #518bdb;
+    --color-ink-black: #221f1c;
+    --color-graphite: #797267;
+    --color-smoke: #797267;
+    --color-paper-white: #f5f5f5;
+    --color-ash-mist: #eceae8;
+    --color-dusk-gradient: #518bdb;
+    --gradient-dusk-gradient: linear-gradient(
+      to right in oklab,
+      #518bdb 0%,
+      #36bab8 100%
+    );
+
+    --font-perfectly-nineties-regular:
+      "Perfectly Nineties Regular", var(--font-perfectly-nineties-regular),
+      ui-serif, Georgia, serif;
+    --font-inter: "Inter", var(--font-sans), ui-sans-serif, system-ui,
+      sans-serif;
+
+    --text-micro: 10px;
+    --text-caption: 12px;
+    --text-body-sm: 14px;
+    --text-body: 16px;
+    --text-heading-sm: 18px;
+    --text-heading: 36px;
+    --text-display: 48px;
+
+    /*
+      DESIGN.md's spacing scale is intentionally NOT mapped into Tailwind's
+      --spacing-<N> namespace: those keys are Tailwind's reserved numeric
+      multiplier scale (h-14 => 14 * --spacing, i.e. 56px by default).
+      Defining --spacing-14: 14px here would silently redefine every h-14/
+      p-14/gap-14/etc. utility site-wide to a literal 14px. Named CSS custom
+      properties below carry the DESIGN.md scale without that collision.
+    */
+    --portal-spacing-4: 4px;
+    --portal-spacing-5: 5px;
+    --portal-spacing-6: 6px;
+    --portal-spacing-8: 8px;
+    --portal-spacing-10: 10px;
+    --portal-spacing-12: 12px;
+    --portal-spacing-14: 14px;
+    --portal-spacing-16: 16px;
+    --portal-spacing-20: 20px;
+    --portal-spacing-24: 24px;
+    --portal-spacing-36: 36px;
+    --portal-spacing-40: 40px;
+    --portal-spacing-45: 45px;
+    --portal-spacing-60: 60px;
+    --portal-spacing-80: 80px;
+    --portal-spacing-100: 100px;
+
+    --radius-sm: 7px;
+    --radius-md: 16px;
+    --radius-lg: 22px;
+    --radius-xl: 30px;
+    --radius-full: 50px;
+
+    --shadow-glow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-glow-inset: rgba(255, 255, 255, 0.6) 0px 0.5px 0px 0.5px inset;
+    --shadow-button: inset 0 1px 0 0 #ffffff, 0 0 0 1px rgba(0, 0, 0, 0.15),
+      0 3px 2px 0 rgba(0, 0, 0, 0.06);
+
+    /* Legacy Kiphaus token names, repointed to the current single accent. */
+    --color-navy-header: #221f1c;
+    --color-seafoam: #518bdb;
+    --color-seafoam-soft: #36bab8;
+    --color-seafoam-badge-bg: #cff2ef;
+    --color-seafoam-badge-fg: #221f1c;
+
+    /* Shadcn color mappings */
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+}
+
+:root {
+    /* page canvas — DESIGN.md Paper White, warm off-white base */
+    --background: #f5f5f5;
+    /* ink black #221f1c — warm near-black, never pure #000 per DESIGN.md */
+    --foreground: #221f1c;
+    --card: #ffffff;
+    --card-foreground: #221f1c;
+    --popover: #ffffff;
+    --popover-foreground: #221f1c;
+    /* Azure Action — the one chromatic CTA color */
+    --primary: #518bdb;
+    --primary-foreground: #ffffff;
+    --secondary: #eceae8;
+    --secondary-foreground: #221f1c;
+    --muted: #eceae8;
+    /* stone gray — 4.7:1 on white cards */
+    --muted-foreground: #797267;
+    --accent: #eceae8;
+    --accent-foreground: #221f1c;
+    --destructive: #ed6d68;
+    --destructive-foreground: #ffffff;
+    --border: #e7e5e2;
+    --input: #d5d2ce;
+    --ring: #518bdb;
+    --chart-1: #518bdb;
+    --chart-2: #36bab8;
+    --chart-3: #ed6d68;
+    --chart-4: #e5a057;
+    --chart-5: #bf89cd;
+    --radius: 22px;
+    --sidebar: #ffffff;
+    --sidebar-foreground: #221f1c;
+    --sidebar-primary: #518bdb;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #eceae8;
+    --sidebar-accent-foreground: #221f1c;
+    --sidebar-border: #e7e5e2;
+    --sidebar-ring: #518bdb;
+}
+
+.dark {
+    /* DESIGN.md specifies light only; this is a warm-neutral inversion that
+       keeps Azure Action as the one accent for the existing dark-mode toggle. */
+    --background: #171512;
+    --foreground: #f5f5f5;
+    --card: #201d1a;
+    --card-foreground: #f5f5f5;
+    --popover: #201d1a;
+    --popover-foreground: #f5f5f5;
+    --primary: #7aa7e8;
+    --primary-foreground: #171512;
+    --secondary: #2a2724;
+    --secondary-foreground: #f5f5f5;
+    --muted: #2a2724;
+    --muted-foreground: #a8a29a;
+    --accent: #2a2724;
+    --accent-foreground: #f5f5f5;
+    --destructive: #ed6d68;
+    --destructive-foreground: #ffffff;
+    --border: #2e2b27;
+    --input: #3a3733;
+    --ring: #7aa7e8;
+    --chart-1: #7aa7e8;
+    --chart-2: #36bab8;
+    --chart-3: #ed6d68;
+    --chart-4: #e5a057;
+    --chart-5: #bf89cd;
+    --sidebar: #171512;
+    --sidebar-foreground: #f5f5f5;
+    --sidebar-primary: #7aa7e8;
+    --sidebar-primary-foreground: #171512;
+    --sidebar-accent: #2a2724;
+    --sidebar-accent-foreground: #f5f5f5;
+    --sidebar-border: #2e2b27;
+    --sidebar-ring: #7aa7e8;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply bg-background text-foreground;
+    }
+  html {
+    @apply font-sans;
+    }
+}
+
+/*
+  Single-token classes for react-day-picker's `animate` prop: its
+  useAnimation hook calls classList.add()/remove() with the class string as
+  one token, so a space-separated Tailwind utility string throws
+  "contains HTML space characters". @apply collapses each into one class.
+
+  Caption and weeks durations must match: useAnimation's cleanup fires on
+  the CAPTION element's `animationend` only, and that cleanup also strips
+  the weeks animation class and removes the outgoing month. A shorter
+  caption duration cuts the weeks transition short and snaps the old month
+  away mid-animation.
+*/
+@layer components {
+  .rdp-weeks-enter-right {
+    @apply animate-in fade-in slide-in-from-right-6 duration-200 ease-out;
+  }
+  .rdp-weeks-enter-left {
+    @apply animate-in fade-in slide-in-from-left-6 duration-200 ease-out;
+  }
+  .rdp-weeks-exit-left {
+    @apply animate-out fade-out slide-out-to-left-6 duration-200 ease-in;
+  }
+  .rdp-weeks-exit-right {
+    @apply animate-out fade-out slide-out-to-right-6 duration-200 ease-in;
+  }
+  .rdp-caption-fade-in {
+    @apply animate-in fade-in duration-200;
+  }
+  .rdp-caption-fade-out {
+    @apply animate-out fade-out duration-200;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
