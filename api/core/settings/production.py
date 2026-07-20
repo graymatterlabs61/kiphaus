@@ -145,6 +145,10 @@ CORS_ALLOW_CREDENTIALS = True
 AUTH_COOKIE_DOMAIN = os.environ.get("AUTH_COOKIE_DOMAIN", "")
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://www.kiphaus.com")
 
+# ── Social login (Google/Apple) — see users/social.py ─────────────────────────
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+APPLE_CLIENT_ID  = os.environ.get("APPLE_CLIENT_ID", "")
+
 # ── Cloudinary ────────────────────────────────────────────────────────────────
 # CLOUDINARY_STORAGE = {
 #     "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME", "cgtjcyy4"),

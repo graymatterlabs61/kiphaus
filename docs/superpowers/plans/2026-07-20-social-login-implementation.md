@@ -253,12 +253,13 @@ Append to `api/requirements.txt`:
 google-auth==2.56.0
 cryptography==49.0.0
 PyJWT==2.13.0
+requests==2.34.2
 ```
 
-`PyJWT` is already installed transitively (via `djangorestframework-simplejwt`) but `users/social.py` (next step) imports it directly — pin it explicitly since it's a direct dependency now, not just incidental.
+`PyJWT` is already installed transitively (via `djangorestframework-simplejwt`) but `users/social.py` (next step) imports it directly — pin it explicitly since it's a direct dependency now, not just incidental. `requests` is needed by `google.auth.transport.requests` (discovered when Step 5's tests errored with `ModuleNotFoundError: No module named 'requests'` — not bundled by `google-auth` itself, has to be installed alongside).
 
-Run: `.venv/Scripts/python.exe -m pip install google-auth==2.56.0 cryptography==49.0.0 PyJWT==2.13.0`
-Expected: `Successfully installed google-auth-2.56.0 cryptography-49.0.0` (`PyJWT` already satisfied).
+Run: `.venv/Scripts/python.exe -m pip install google-auth==2.56.0 cryptography==49.0.0 PyJWT==2.13.0 requests==2.34.2`
+Expected: `Successfully installed google-auth-2.56.0 cryptography-49.0.0` (`PyJWT` already satisfied) plus `requests` and its own transitive deps (`urllib3`, `idna`, `charset_normalizer`, `certifi`).
 
 - [ ] **Step 2: Add client ID settings**
 

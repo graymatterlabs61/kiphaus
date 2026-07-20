@@ -136,6 +136,10 @@ AUTH_COOKIE_DOMAIN = env("AUTH_COOKIE_DOMAIN", default="")
 # Used to build the password-reset link emailed to users.
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 
+# ── Social login (Google/Apple) — see users/social.py ─────────────────────────
+GOOGLE_CLIENT_ID = env("GOOGLE_CLIENT_ID", default="")
+APPLE_CLIENT_ID  = env("APPLE_CLIENT_ID", default="")
+
 # ── Celery ────────────────────────────────────────────────────────────────────
 CELERY_BROKER_URL = env("REDIS_URL", default="redis://127.0.0.1:6379/0")
 CELERY_RESULT_BACKEND = env("REDIS_URL", default="redis://127.0.0.1:6379/0")
