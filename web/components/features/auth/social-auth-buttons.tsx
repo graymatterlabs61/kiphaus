@@ -36,6 +36,7 @@ interface SocialAuthButtonsProps {
 export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps) {
   const { loginWithGoogle, loginWithApple } = useAuth()
   const googleButtonRef = React.useRef<HTMLDivElement>(null)
+  const [googleReady, setGoogleReady] = React.useState(false)
 
   const handleGoogleCredential = React.useCallback(
     async (credential: string) => {
@@ -58,27 +59,38 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
     }
   }, [loginWithApple, onSuccess, onError])
 
+  const initGoogleButton = React.useCallback(() => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+    if (!clientId || !window.google || !googleButtonRef.current) return
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: (resp) => handleGoogleCredential(resp.credential),
+    })
+    window.google.accounts.id.renderButton(googleButtonRef.current, {
+      type: "standard",
+      shape: "pill",
+      theme: "outline",
+      size: "large",
+      text: "continue_with",
+      width: 260,
+    })
+    setGoogleReady(true)
+  }, [handleGoogleCredential])
+
+  React.useEffect(() => {
+    // next/script dedupes by src app-wide, so onLoad only fires once per
+    // session. On a page navigated to after the GSI script already loaded
+    // elsewhere, render into this page's button directly instead of
+    // waiting for an onLoad that will never fire again.
+    if (window.google) initGoogleButton()
+  }, [initGoogleButton])
+
   return (
     <>
       <Script
         src="https://accounts.google.com/gsi/client"
         strategy="afterInteractive"
-        onLoad={() => {
-          const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-          if (!clientId || !window.google || !googleButtonRef.current) return
-          window.google.accounts.id.initialize({
-            client_id: clientId,
-            callback: (resp) => handleGoogleCredential(resp.credential),
-          })
-          window.google.accounts.id.renderButton(googleButtonRef.current, {
-            type: "standard",
-            shape: "pill",
-            theme: "outline",
-            size: "large",
-            text: "continue_with",
-            width: 260,
-          })
-        }}
+        onLoad={initGoogleButton}
       />
       <Script
         src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"
@@ -101,7 +113,7 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
         <div className="flex-1 border-t border-border"></div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 items-center">
+      <div className={`grid gap-3 items-center ${googleReady ? "grid-cols-2" : "grid-cols-1"}`}>
         <Button
           type="button"
           variant="outline"
@@ -113,7 +125,10 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
           </svg>
           Apple
         </Button>
-        <div ref={googleButtonRef} className="flex justify-center [&>div]:w-full" />
+        <div
+          ref={googleButtonRef}
+          className={`flex justify-center [&>div]:w-full ${googleReady ? "" : "hidden"}`}
+        />
       </div>
     </>
   )

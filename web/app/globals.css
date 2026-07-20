@@ -15,11 +15,11 @@
 */
 @theme inline {
     --color-signal-blue: #518bdb;
-    --color-ink-black: #221f1c;
-    --color-graphite: #797267;
-    --color-smoke: #797267;
-    --color-paper-white: #f5f5f5;
-    --color-ash-mist: #eceae8;
+    --color-ink-black: var(--ink-black);
+    --color-graphite: var(--graphite);
+    --color-smoke: var(--smoke);
+    --color-paper-white: var(--paper-white);
+    --color-ash-mist: var(--ash-mist);
     --color-dusk-gradient: #518bdb;
     --gradient-dusk-gradient: linear-gradient(
       to right in oklab,
@@ -156,6 +156,13 @@
     --sidebar-accent-foreground: #221f1c;
     --sidebar-border: #e7e5e2;
     --sidebar-ring: #518bdb;
+
+    /* Legacy Portal tokens, indirected so .dark can override them (see below). */
+    --ink-black: #221f1c;
+    --graphite: #797267;
+    --smoke: #797267;
+    --paper-white: #f5f5f5;
+    --ash-mist: #eceae8;
 }
 
 .dark {
@@ -193,6 +200,14 @@
     --sidebar-accent-foreground: #f5f5f5;
     --sidebar-border: #2e2b27;
     --sidebar-ring: #7aa7e8;
+
+    /* Mirrors foreground/muted-foreground/background/secondary so text set via
+       the legacy Portal token names still inverts with the theme. */
+    --ink-black: #f5f5f5;
+    --graphite: #a8a29a;
+    --smoke: #a8a29a;
+    --paper-white: #171512;
+    --ash-mist: #2a2724;
 }
 
 @layer base {
